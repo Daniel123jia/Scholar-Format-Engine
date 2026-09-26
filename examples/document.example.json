@@ -1,0 +1,81 @@
+{
+  "schema_version": "1.0",
+  "document_id": "example-report",
+  "document_kind": "research_report",
+  "language": "zh-CN",
+  "title": "科研报告示例",
+  "subtitle": "Scholar Document Delivery 示例文档",
+  "metadata": {
+    "作者": "Example User",
+    "日期": "2026-09-26",
+    "用途": "样式与导出测试"
+  },
+  "blocks": [
+    {
+      "type": "heading",
+      "role": "heading1",
+      "level": 1,
+      "text": "01 概览"
+    },
+    {
+      "type": "paragraph",
+      "role": "lead",
+      "text": "这个示例用于验证标题、正文、证据卡片、表格与页码等基础交付能力。"
+    },
+    {
+      "type": "callout",
+      "role": "evidence",
+      "title": "原文依据",
+      "text": "This is a verified source snippet used only for demonstrating the document style.",
+      "meta": {
+        "位置": "Section 2.1",
+        "类型": "method description"
+      }
+    },
+    {
+      "type": "heading",
+      "role": "heading1",
+      "level": 1,
+      "text": "02 结构化内容"
+    },
+    {
+      "type": "paragraph",
+      "role": "body",
+      "text": "正文采用 Style Pack 统一控制中英文字体、字号、行距和段落间距。"
+    },
+    {
+      "type": "list",
+      "role": "body",
+      "ordered": false,
+      "items": [
+        "同一个内容模型可以导出 Word。",
+        "同一个内容模型可以导出 Markdown。",
+        "样式变化由 Style Pack 控制，而不是改写内容。"
+      ]
+    },
+    {
+      "type": "table",
+      "role": "table",
+      "caption": "表 1 交付层职责",
+      "headers": ["模块", "职责"],
+      "rows": [
+        ["上游 Skill", "负责内容与科研判断"],
+        ["DocumentIR", "负责统一结构"],
+        ["Style Pack", "负责格式策略"],
+        ["Renderer", "负责确定性输出"]
+      ]
+    },
+    {
+      "type": "callout",
+      "role": "analysis",
+      "title": "AI 分析",
+      "text": "分析性内容与原文证据使用不同视觉角色，避免用户混淆。"
+    },
+    {
+      "type": "equation",
+      "role": "equation",
+      "text": "y = f(x; \\theta)",
+      "label": "(1)"
+    }
+  ]
+}

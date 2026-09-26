@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:scholar-document-delivery:style-pack:1.0",
+  "title": "Scholar Document Delivery Style Pack",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["pack", "page", "features", "roles", "table"],
+  "properties": {
+    "pack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "description"],
+      "properties": {
+        "name": {"type": "string"},
+        "version": {"type": "string"},
+        "description": {"type": "string"}
+      }
+    },
+    "page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["size", "orientation", "margins_mm"],
+      "properties": {
+        "size": {"type": "string", "enum": ["A4", "LETTER"]},
+        "orientation": {"type": "string", "enum": ["portrait", "landscape"]},
+        "margins_mm": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["top", "bottom", "left", "right"],
+          "properties": {
+            "top": {"type": "number", "minimum": 0},
+            "bottom": {"type": "number", "minimum": 0},
+            "left": {"type": "number", "minimum": 0},
+            "right": {"type": "number", "minimum": 0}
+          }
+        }
+      }
+    },
+    "features": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["toc", "page_numbers", "metadata_table", "header_text", "footer_text"],
+      "properties": {
+        "toc": {"type": "boolean"},
+        "toc_title": {"type": "string"},
+        "toc_page_break_after": {"type": "boolean"},
+        "page_numbers": {"type": "boolean"},
+        "metadata_table": {"type": "boolean"},
+        "header_text": {"type": ["string", "null"]},
+        "footer_text": {"type": ["string", "null"]},
+        "markdown_front_matter": {"type": "boolean"}
+      }
+    },
+    "roles": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {"$ref": "#/$defs/role_style"}
+    },
+    "table": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["preset", "repeat_header", "autofit", "header_fill", "border_color"],
+      "properties": {
+        "preset": {"type": "string", "enum": ["three_line", "grid", "minimal"]},
+        "repeat_header": {"type": "boolean"},
+        "autofit": {"type": "boolean"},
+        "header_fill": {"type": ["string", "null"]},
+        "border_color": {"type": "string"}
+      }
+    },
+    "callouts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "fill": {"type": ["string", "null"]},
+          "border_color": {"type": ["string", "null"]}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "font": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["latin", "east_asia", "size_pt", "bold", "italic", "color"],
+      "properties": {
+        "latin": {"type": "string"},
+        "east_asia": {"type": "string"},
+        "size_pt": {"type": "number", "exclusiveMinimum": 0},
+        "bold": {"type": "boolean"},
+        "italic": {"type": "boolean"},
+        "color": {"type": "string", "pattern": "^[0-9A-Fa-f]{6}$"}
+      }
+    },
+    "paragraph": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["alignment", "line_spacing", "space_before_pt", "space_after_pt", "first_line_indent_chars", "left_indent_cm", "right_indent_cm", "keep_with_next"],
+      "properties": {
+        "alignment": {"type": "string", "enum": ["left", "center", "right", "justify"]},
+        "line_spacing": {"type": "number", "exclusiveMinimum": 0},
+        "space_before_pt": {"type": "number", "minimum": 0},
+        "space_after_pt": {"type": "number", "minimum": 0},
+        "first_line_indent_chars": {"type": "number", "minimum": 0},
+        "left_indent_cm": {"type": "number", "minimum": 0},
+        "right_indent_cm": {"type": "number", "minimum": 0},
+        "keep_with_next": {"type": "boolean"}
+      }
+    },
+    "role_style": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["font", "paragraph"],
+      "properties": {
+        "font": {"$ref": "#/$defs/font"},
+        "paragraph": {"$ref": "#/$defs/paragraph"}
+      }
+    }
+  }
+}

@@ -1,0 +1,255 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:scholar-document-delivery:document-content:1.0",
+  "title": "Scholar DocumentIR",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "document_id", "document_kind", "language", "title", "metadata", "blocks"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0"},
+    "document_id": {"type": "string", "minLength": 1},
+    "document_kind": {
+      "type": "string",
+      "enum": [
+        "ai_deep_reading",
+        "academic_paper",
+        "literature_review",
+        "peer_review_report",
+        "reviewer_response",
+        "thesis",
+        "proposal",
+        "research_report",
+        "general_report",
+        "custom"
+      ]
+    },
+    "language": {"type": "string", "minLength": 2},
+    "title": {"type": ["string", "null"]},
+    "subtitle": {"type": ["string", "null"]},
+    "metadata": {
+      "type": "object",
+      "additionalProperties": {"type": ["string", "number", "integer", "boolean", "null"]}
+    },
+    "blocks": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/block"}
+    }
+  },
+  "$defs": {
+    "run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text"],
+      "properties": {
+        "text": {"type": "string"},
+        "bold": {"type": "boolean", "default": false},
+        "italic": {"type": "boolean", "default": false},
+        "underline": {"type": "boolean", "default": false},
+        "code": {"type": "boolean", "default": false},
+        "link": {"type": ["string", "null"]}
+      }
+    },
+    "base": {
+      "type": "object",
+      "required": ["type", "role"],
+      "properties": {
+        "id": {"type": ["string", "null"]},
+        "type": {"type": "string"},
+        "role": {"type": "string", "minLength": 1}
+      }
+    },
+    "heading": {
+      "allOf": [
+        {"$ref": "#/$defs/base"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "role", "level", "text"],
+          "properties": {
+            "id": {"type": ["string", "null"]},
+            "type": {"const": "heading"},
+            "role": {"type": "string"},
+            "level": {"type": "integer", "minimum": 1, "maximum": 6},
+            "text": {"type": "string"}
+          }
+        }
+      ]
+    },
+    "paragraph": {
+      "allOf": [
+        {"$ref": "#/$defs/base"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "role"],
+          "properties": {
+            "id": {"type": ["string", "null"]},
+            "type": {"const": "paragraph"},
+            "role": {"type": "string"},
+            "text": {"type": ["string", "null"]},
+            "runs": {"type": "array", "items": {"$ref": "#/$defs/run"}}
+          },
+          "anyOf": [
+            {"required": ["text"]},
+            {"required": ["runs"]}
+          ]
+        }
+      ]
+    },
+    "list": {
+      "allOf": [
+        {"$ref": "#/$defs/base"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "role", "ordered", "items"],
+          "properties": {
+            "id": {"type": ["string", "null"]},
+            "type": {"const": "list"},
+            "role": {"type": "string"},
+            "ordered": {"type": "boolean"},
+            "items": {"type": "array", "items": {"type": "string"}, "minItems": 1}
+          }
+        }
+      ]
+    },
+    "table": {
+      "allOf": [
+        {"$ref": "#/$defs/base"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "role", "headers", "rows"],
+          "properties": {
+            "id": {"type": ["string", "null"]},
+            "type": {"const": "table"},
+            "role": {"type": "string"},
+            "caption": {"type": ["string", "null"]},
+            "headers": {"type": "array", "items": {"type": "string"}},
+            "rows": {
+              "type": "array",
+              "items": {"type": "array", "items": {"type": ["string", "number", "integer", "boolean", "null"]}}
+            },
+            "note": {"type": ["string", "null"]}
+          }
+        }
+      ]
+    },
+    "quote": {
+      "allOf": [
+        {"$ref": "#/$defs/base"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "role", "text"],
+          "properties": {
+            "id": {"type": ["string", "null"]},
+            "type": {"const": "quote"},
+            "role": {"type": "string"},
+            "text": {"type": "string"},
+            "source": {"type": ["string", "null"]}
+          }
+        }
+      ]
+    },
+    "callout": {
+      "allOf": [
+        {"$ref": "#/$defs/base"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "role", "text"],
+          "properties": {
+            "id": {"type": ["string", "null"]},
+            "type": {"const": "callout"},
+            "role": {"type": "string"},
+            "title": {"type": ["string", "null"]},
+            "text": {"type": "string"},
+            "meta": {"type": "object", "additionalProperties": {"type": ["string", "number", "integer", "boolean", "null"]}}
+          }
+        }
+      ]
+    },
+    "image": {
+      "allOf": [
+        {"$ref": "#/$defs/base"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "role", "path"],
+          "properties": {
+            "id": {"type": ["string", "null"]},
+            "type": {"const": "image"},
+            "role": {"type": "string"},
+            "path": {"type": "string"},
+            "alt": {"type": ["string", "null"]},
+            "caption": {"type": ["string", "null"]},
+            "required": {"type": "boolean", "default": true},
+            "width_cm": {"type": ["number", "null"], "exclusiveMinimum": 0}
+          }
+        }
+      ]
+    },
+    "equation": {
+      "allOf": [
+        {"$ref": "#/$defs/base"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "role", "text"],
+          "properties": {
+            "id": {"type": ["string", "null"]},
+            "type": {"const": "equation"},
+            "role": {"type": "string"},
+            "text": {"type": "string"},
+            "label": {"type": ["string", "null"]}
+          }
+        }
+      ]
+    },
+    "page_break": {
+      "allOf": [
+        {"$ref": "#/$defs/base"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "role"],
+          "properties": {
+            "id": {"type": ["string", "null"]},
+            "type": {"const": "page_break"},
+            "role": {"type": "string"}
+          }
+        }
+      ]
+    },
+    "horizontal_rule": {
+      "allOf": [
+        {"$ref": "#/$defs/base"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "role"],
+          "properties": {
+            "id": {"type": ["string", "null"]},
+            "type": {"const": "horizontal_rule"},
+            "role": {"type": "string"}
+          }
+        }
+      ]
+    },
+    "block": {
+      "oneOf": [
+        {"$ref": "#/$defs/heading"},
+        {"$ref": "#/$defs/paragraph"},
+        {"$ref": "#/$defs/list"},
+        {"$ref": "#/$defs/table"},
+        {"$ref": "#/$defs/quote"},
+        {"$ref": "#/$defs/callout"},
+        {"$ref": "#/$defs/image"},
+        {"$ref": "#/$defs/equation"},
+        {"$ref": "#/$defs/page_break"},
+        {"$ref": "#/$defs/horizontal_rule"}
+      ]
+    }
+  }
+}

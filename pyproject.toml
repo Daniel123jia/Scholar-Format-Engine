@@ -1,0 +1,14 @@
+[project]
+name = "scholar-format-engine"
+version = "1.0.0"
+description = "Deterministic DOCX and Markdown delivery for structured research content."
+requires-python = ">=3.10"
+dependencies = [
+  "python-docx>=1.1.0",
+  "PyYAML>=6.0",
+  "jsonschema>=4.20",
+  "Pillow>=10.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

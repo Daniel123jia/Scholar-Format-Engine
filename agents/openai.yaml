@@ -1,0 +1,32 @@
+name: scholar-document-delivery
+version: 1.0.0-alpha
+description: >
+  Shared document-delivery skill for research workflows. Converts structured
+  academic/research content into consistent DOCX and Markdown using reusable
+  Style Packs, deterministic rendering, and validation.
+
+skill_file: ../SKILL.md
+content_schema: ../schemas/document-content.schema.json
+style_schema: ../schemas/style-pack.schema.json
+request_schema: ../schemas/delivery-request.schema.json
+
+trigger_phrases:
+  - 导出 Word
+  - 导出 Markdown
+  - 生成 Word 文档
+  - 按格式排版
+  - 文档排版
+  - 学术报告导出
+  - 论文精读报告导出
+  - reviewer response export
+  - format research report
+  - export academic report
+
+outputs:
+  - docx
+  - markdown
+
+constraints:
+  preserve_content: true
+  deterministic_formatting: true
+  visual_qa_recommended_for_docx: true
