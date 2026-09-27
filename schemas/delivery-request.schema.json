@@ -1,17 +1,51 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:scholar-document-delivery:delivery-request:1.0",
-  "title": "Scholar Document Delivery Request",
+  "$id": "urn:scholar-format-engine:delivery-request:1.0",
+  "title": "Scholar-Format-Engine Delivery Request",
   "type": "object",
   "additionalProperties": false,
-  "required": ["input_path", "output_format", "output_path", "style_pack"],
+  "required": [
+    "input_path",
+    "output_format",
+    "output_path",
+    "style_pack"
+  ],
   "properties": {
-    "input_path": {"type": "string"},
-    "adapter": {"type": ["string", "null"], "enum": [null, "deep-reading"]},
-    "output_format": {"type": "string", "enum": ["docx", "md"]},
-    "output_path": {"type": "string"},
-    "style_pack": {"type": "string"},
-    "emit_ir": {"type": ["string", "null"]},
-    "visual_qa": {"type": "boolean", "default": false}
+    "input_path": {
+      "type": "string"
+    },
+    "adapter": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        null,
+        "deep-reading"
+      ]
+    },
+    "output_format": {
+      "type": "string",
+      "enum": [
+        "docx",
+        "md"
+      ]
+    },
+    "output_path": {
+      "type": "string"
+    },
+    "style_pack": {
+      "type": "string"
+    },
+    "emit_ir": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "visual_qa": {
+      "type": "boolean",
+      "default": false
+    }
   }
 }

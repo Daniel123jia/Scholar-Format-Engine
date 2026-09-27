@@ -4,6 +4,7 @@ import json
 import subprocess
 import sys
 import tempfile
+import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -18,10 +19,10 @@ def run(*args):
 
 
 def main():
-    with tempfile.TemporaryDirectory(prefix="sdd-test-") as td:
+    with tempfile.TemporaryDirectory(prefix="sfe-test-") as td:
         td = Path(td)
         example = ROOT / "examples/document.example.json"
-        deep = ROOT / "examples/deep-reading-result.example.json"
+        deep = ROOT / "examples/deep-reading-result-v1.3.example.json"
         style = ROOT / "style-packs/ai-deep-reading.yaml"
 
         run(ROOT / "scripts/validate_document.py", "--input", example, "--style", style)
@@ -32,43 +33,34 @@ def main():
         run(ROOT / "scripts/compile.py", "--input", example, "--style", style, "--format", "docx", "--output", docx)
         assert md.exists() and md.stat().st_size > 100
         assert docx.exists() and docx.stat().st_size > 1000
+        run(ROOT / "scripts/validate_docx_structure.py", docx)
 
         deep_docx = td / "deep.docx"
+        deep_md = td / "deep.md"
         ir = td / "deep.ir.json"
         run(ROOT / "scripts/compile.py", "--input", deep, "--adapter", "deep-reading", "--style", style, "--format", "docx", "--output", deep_docx, "--emit-ir", ir)
-        assert deep_docx.exists() and deep_docx.stat().st_size > 1000
+        run(ROOT / "scripts/compile.py", "--input", deep, "--adapter", "deep-reading", "--style", style, "--format", "md", "--output", deep_md)
+        run(ROOT / "scripts/validate_docx_structure.py", deep_docx)
+
         data = json.loads(ir.read_text(encoding="utf-8"))
         assert data["document_kind"] == "ai_deep_reading"
+        assert data["title"] == "AI 论文精读报告"
         assert any(b.get("text") == "04 实验与证据" for b in data["blocks"] if b.get("type") == "heading")
+        assert any(b.get("text") == "附录：证据索引" for b in data["blocks"] if b.get("type") == "heading")
 
-        ai_reader_payload = td / "ai-reader-result.json"
-        ai_reader_payload.write_text(
-            json.dumps(
-                {
-                    "paper_key": "doi:10.0000/example",
-                    "analysis_type": "deep",
-                    "status": "ready",
-                    "analysis": json.loads(deep.read_text(encoding="utf-8")),
-                },
-                ensure_ascii=False,
-            ),
-            encoding="utf-8",
-        )
-        ai_reader_md = td / "ai-reader.md"
-        run(
-            ROOT / "scripts/compile.py",
-            "--input",
-            ai_reader_payload,
-            "--adapter",
-            "ai-reader",
-            "--style",
-            style,
-            "--format",
-            "md",
-            "--output",
-            ai_reader_md,
-        )
-        assert "Example Evidence-Grounded Paper" in ai_reader_md.read_text(encoding="utf-8")
+        md_text = deep_md.read_text(encoding="utf-8")
+        assert "[reported]" not in md_text
+        assert "[inferred]" not in md_text
+        assert "E2_BODY_TEXT" not in md_text
+        assert "论文内部支持" in md_text
+        assert "Open Question" in md_text
+
+        with zipfile.ZipFile(deep_docx) as zf:
+            names = set(zf.namelist())
+            assert "word/styles.xml" in names
+            styles = zf.read("word/styles.xml").decode("utf-8", errors="ignore")
+            assert 'w:styleId="Heading1"' in styles
+            assert "SFE" in styles
 
         print("SMOKE TEST PASSED")
 

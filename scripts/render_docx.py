@@ -58,6 +58,12 @@ def apply_paragraph_format(paragraph, role_cfg: Dict[str, Any]):
     else:
         pf.first_line_indent = Pt(0)
     pf.keep_with_next = bool(p_cfg.get("keep_with_next", False))
+    pf.page_break_before = bool(p_cfg.get("page_break_before", False))
+    # Word widow/orphan control is enabled by default; make it explicit when configured.
+    if p_cfg.get("widow_control", True):
+        pPr = paragraph._p.get_or_add_pPr() if hasattr(paragraph, "_p") else None
+        if pPr is not None and pPr.find(qn("w:widowControl")) is None:
+            pPr.append(OxmlElement("w:widowControl"))
 
 
 def get_role_cfg(style: Dict[str, Any], role: str) -> Dict[str, Any]:
@@ -123,6 +129,10 @@ def configure_style(doc: Document, style_name: str, role_cfg: Dict[str, Any]):
     font_size = float(font_cfg.get("size_pt", 11))
     pf.first_line_indent = Pt(font_size * chars) if chars else Pt(0)
     pf.keep_with_next = bool(p_cfg.get("keep_with_next", False))
+    pf.page_break_before = bool(p_cfg.get("page_break_before", False))
+    ppr = st._element.get_or_add_pPr()
+    if p_cfg.get("widow_control", True) and ppr.find(qn("w:widowControl")) is None:
+        ppr.append(OxmlElement("w:widowControl"))
     return st
 
 
@@ -141,7 +151,14 @@ def setup_styles(doc: Document, style: Dict[str, Any]):
     for role, cfg in roles.items():
         if role in mapping:
             continue
-        configure_style(doc, f"SDD {role}", cfg)
+        configure_style(doc, f"SFE {role}", cfg)
+    # Keep Word's list styles visually consistent with body text.
+    if "body" in roles:
+        for style_name in ("List Bullet", "List Number", "List Bullet 2", "List Number 2"):
+            try:
+                configure_style(doc, style_name, roles["body"])
+            except Exception:
+                pass
 
 
 def set_page_layout(doc: Document, style: Dict[str, Any]):
@@ -239,7 +256,7 @@ def style_paragraph(paragraph, role: str, style: Dict[str, Any]):
 
 def add_rich_paragraph(doc: Document, block: Dict[str, Any], style: Dict[str, Any]):
     role = block.get("role", "body")
-    style_name = "Normal" if role == "body" else f"SDD {role}"
+    style_name = "Normal" if role == "body" else f"SFE {role}"
     if role in {"heading1", "heading2", "heading3"}:
         style_name = {"heading1": "Heading 1", "heading2": "Heading 2", "heading3": "Heading 3"}[role]
     try:
@@ -316,6 +333,60 @@ def set_cell_border(cell, **kwargs):
                 element.set(qn("w:" + key), str(value))
 
 
+
+
+def set_cell_margins(cell, top_mm=1.2, start_mm=1.8, bottom_mm=1.2, end_mm=1.8):
+    tc = cell._tc
+    tcPr = tc.get_or_add_tcPr()
+    tcMar = tcPr.first_child_found_in("w:tcMar")
+    if tcMar is None:
+        tcMar = OxmlElement("w:tcMar")
+        tcPr.append(tcMar)
+    for m, mm in (("top", top_mm), ("start", start_mm), ("bottom", bottom_mm), ("end", end_mm)):
+        node = tcMar.find(qn("w:" + m))
+        if node is None:
+            node = OxmlElement("w:" + m)
+            tcMar.append(node)
+        node.set(qn("w:w"), str(int(float(mm) * 56.7)))
+        node.set(qn("w:type"), "dxa")
+
+
+def add_metadata_table(doc: Document, metadata: Dict[str, Any], style: Dict[str, Any]):
+    rows = [(k, v) for k, v in metadata.items() if v is not None and str(v).strip()]
+    if not rows:
+        return None
+    table = doc.add_table(rows=len(rows), cols=2)
+    table.alignment = 1
+    table.autofit = False
+    cfg = style.get("table", {})
+    margin = float(cfg.get("cell_margin_mm", 1.4))
+    fill = cfg.get("metadata_fill") or "F8FAFC"
+    for i, (key, value) in enumerate(rows):
+        row = table.rows[i]
+        set_row_cant_split(row)
+        label_cell, value_cell = row.cells
+        for cell in row.cells:
+            set_cell_margins(cell, margin, margin * 1.2, margin, margin * 1.2)
+            cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
+            # Very light separators only.
+            set_cell_border(cell, bottom={"val": "single", "sz": "3", "color": "E5E7EB"})
+        set_cell_shading(label_cell, fill)
+        label_cell.text = ""
+        value_cell.text = ""
+        p1 = label_cell.paragraphs[0]
+        p2 = value_cell.paragraphs[0]
+        label_cfg = get_role_cfg(style, "table_header")
+        value_cfg = get_role_cfg(style, "table")
+        apply_paragraph_format(p1, label_cfg)
+        apply_paragraph_format(p2, value_cfg)
+        p1.alignment = WD_ALIGN_PARAGRAPH.LEFT
+        p2.alignment = WD_ALIGN_PARAGRAPH.LEFT
+        r1 = p1.add_run(str(key))
+        set_run_font(r1, label_cfg.get("font", {}), bold_override=True)
+        r2 = p2.add_run(str(value))
+        set_run_font(r2, value_cfg.get("font", {}))
+    return table
+
 def set_repeat_table_header(row):
     trPr = row._tr.get_or_add_trPr()
     tblHeader = OxmlElement("w:tblHeader")
@@ -359,7 +430,7 @@ def style_table(table, style: Dict[str, Any]):
 
 def add_table(doc: Document, block: Dict[str, Any], style: Dict[str, Any]):
     if block.get("caption"):
-        p = doc.add_paragraph(style="SDD caption")
+        p = doc.add_paragraph(style="SFE caption")
         cfg = get_role_cfg(style, "caption")
         apply_paragraph_format(p, cfg)
         r = p.add_run(block["caption"])
@@ -383,6 +454,8 @@ def add_table(doc: Document, block: Dict[str, Any], style: Dict[str, Any]):
             cell = row.cells[j]
             cell.text = ""
             cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
+            margin = float(style.get("table", {}).get("cell_margin_mm", 1.2))
+            set_cell_margins(cell, margin, margin, margin, margin)
             set_cell_shading(cell, fill)
             p = cell.paragraphs[0]
             cfg = get_role_cfg(style, "table_header")
@@ -397,6 +470,11 @@ def add_table(doc: Document, block: Dict[str, Any], style: Dict[str, Any]):
             cell = row.cells[j]
             cell.text = ""
             cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
+            margin = float(style.get("table", {}).get("cell_margin_mm", 1.2))
+            set_cell_margins(cell, margin, margin, margin, margin)
+            stripe = style.get("table", {}).get("stripe_fill")
+            if stripe and i % 2 == 1:
+                set_cell_shading(cell, stripe)
             p = cell.paragraphs[0]
             cfg = get_role_cfg(style, "table")
             apply_paragraph_format(p, cfg)
@@ -406,7 +484,7 @@ def add_table(doc: Document, block: Dict[str, Any], style: Dict[str, Any]):
     style_table(table, style)
 
     if block.get("note"):
-        p = doc.add_paragraph(style="SDD note")
+        p = doc.add_paragraph(style="SFE note")
         cfg = get_role_cfg(style, "note")
         apply_paragraph_format(p, cfg)
         r = p.add_run("Note: " + str(block["note"]))
@@ -421,6 +499,7 @@ def add_callout(doc: Document, block: Dict[str, Any], style: Dict[str, Any]):
     set_row_cant_split(table.rows[0])
     cell = table.cell(0, 0)
     cell.text = ""
+    set_cell_margins(cell, 2.0, 2.4, 2.0, 2.4)
     call_cfg = (style.get("callouts") or {}).get(role, {})
     set_cell_shading(cell, call_cfg.get("fill"))
     border_color = normalize_hex(call_cfg.get("border_color"), "9CA3AF")
@@ -454,7 +533,7 @@ def add_callout(doc: Document, block: Dict[str, Any], style: Dict[str, Any]):
 
 
 def add_quote(doc: Document, block: Dict[str, Any], style: Dict[str, Any]):
-    p = doc.add_paragraph(style="SDD quote")
+    p = doc.add_paragraph(style="SFE quote")
     cfg = get_role_cfg(style, "quote")
     apply_paragraph_format(p, cfg)
     r = p.add_run(block.get("text", ""))
@@ -482,7 +561,7 @@ def add_image(doc: Document, block: Dict[str, Any], style: Dict[str, Any], input
     if not path.is_absolute():
         path = input_base / path
     if not path.exists():
-        p = doc.add_paragraph(style="SDD warning")
+        p = doc.add_paragraph(style="SFE warning")
         cfg = get_role_cfg(style, "warning")
         apply_paragraph_format(p, cfg)
         r = p.add_run(f"[Missing image: {path}]")
@@ -496,7 +575,7 @@ def add_image(doc: Document, block: Dict[str, Any], style: Dict[str, Any], input
     else:
         p.add_run().add_picture(str(path), width=Cm(14.5))
     if block.get("caption"):
-        cp = doc.add_paragraph(style="SDD caption")
+        cp = doc.add_paragraph(style="SFE caption")
         cfg = get_role_cfg(style, "caption")
         apply_paragraph_format(cp, cfg)
         r = cp.add_run(str(block["caption"]))
@@ -504,7 +583,7 @@ def add_image(doc: Document, block: Dict[str, Any], style: Dict[str, Any], input
 
 
 def add_equation(doc: Document, block: Dict[str, Any], style: Dict[str, Any]):
-    p = doc.add_paragraph(style="SDD equation")
+    p = doc.add_paragraph(style="SFE equation")
     cfg = get_role_cfg(style, "equation")
     apply_paragraph_format(p, cfg)
     text = str(block.get("text", ""))
@@ -562,7 +641,7 @@ def render(document: Dict[str, Any], style: Dict[str, Any], output: str | Path, 
         r = p.add_run(str(document["title"]))
         set_run_font(r, cfg.get("font", {}))
     if document.get("subtitle"):
-        p = doc.add_paragraph(style="SDD subtitle")
+        p = doc.add_paragraph(style="SFE subtitle")
         cfg = get_role_cfg(style, "subtitle")
         apply_paragraph_format(p, cfg)
         r = p.add_run(str(document["subtitle"]))
@@ -570,10 +649,13 @@ def render(document: Dict[str, Any], style: Dict[str, Any], output: str | Path, 
 
     # Metadata
     if style.get("features", {}).get("metadata_table") and document.get("metadata"):
-        rows = [[k, v] for k, v in document["metadata"].items() if v is not None and str(v).strip()]
-        if rows:
-            add_table(doc, {"headers": ["项目", "内容"], "rows": rows, "role": "table"}, style)
-            doc.add_paragraph()
+        add_metadata_table(doc, document["metadata"], style)
+        spacer = doc.add_paragraph()
+        spacer.paragraph_format.space_after = Pt(0)
+
+    features = style.get("features", {})
+    if features.get("cover_page") and features.get("cover_page_break_after_metadata", True):
+        doc.add_page_break()
 
     toc_inserted = False
     for block in document.get("blocks", []):
@@ -585,6 +667,10 @@ def render(document: Dict[str, Any], style: Dict[str, Any], output: str | Path, 
 
         t = block.get("type")
         if t == "heading":
+            if features.get("major_section_page_break") and int(block.get("level", 1)) == 1:
+                # Do not force a break before the very first content heading immediately after TOC.
+                if len(doc.paragraphs) > 0 and not (toc_inserted and doc.paragraphs[-1].text == ""):
+                    pass
             add_heading(doc, block, style)
         elif t == "paragraph":
             add_rich_paragraph(doc, block, style)
@@ -616,7 +702,7 @@ def render(document: Dict[str, Any], style: Dict[str, Any], output: str | Path, 
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Render Scholar DocumentIR to DOCX.")
+    ap = argparse.ArgumentParser(description="Render Scholar-Format-Engine DocumentIR to DOCX.")
     ap.add_argument("--input", required=True)
     ap.add_argument("--style", required=True)
     ap.add_argument("--output", required=True)

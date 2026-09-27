@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import sys
 from pathlib import Path
 
@@ -22,22 +21,19 @@ from render_docx import render as render_docx
 from render_markdown import render as render_markdown
 
 
-def adapt_input(data: dict, adapter: str | None) -> dict:
+def adapt_input(data: dict, adapter: str | None, style: dict | None = None) -> dict:
     if not adapter:
         return data
-    if adapter == "ai-reader":
-        from adapters.ai_reader_to_document import adapt
-        return adapt(data)
     if adapter == "deep-reading":
         from adapters.deep_reading_to_document import adapt
-        return adapt(data)
+        return adapt(data, style=style)
     raise ValueError(f"Unknown adapter: {adapter}")
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Compile research content into DOCX or Markdown.")
+    ap = argparse.ArgumentParser(description="Compile research content into DOCX or Markdown with Scholar-Format-Engine.")
     ap.add_argument("--input", required=True)
-    ap.add_argument("--adapter", choices=["deep-reading", "ai-reader"], default=None)
+    ap.add_argument("--adapter", choices=["deep-reading"], default=None)
     ap.add_argument("--style", required=True)
     ap.add_argument("--format", required=True, choices=["docx", "md"])
     ap.add_argument("--output", required=True)
@@ -46,8 +42,8 @@ def main() -> int:
     args = ap.parse_args()
 
     raw = load_json(args.input)
-    document = adapt_input(raw, args.adapter)
     style = load_yaml(args.style)
+    document = adapt_input(raw, args.adapter, style=style)
 
     errors = [f"DocumentIR: {e}" for e in validate_document_ir(document)]
     errors += [f"StylePack: {e}" for e in validate_style_pack(style)]

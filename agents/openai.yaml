@@ -1,32 +1,32 @@
-name: scholar-document-delivery
-version: 1.0.0-alpha
+name: Scholar-Format-Engine
+version: 1.1.0
 description: >
-  Shared document-delivery skill for research workflows. Converts structured
-  academic/research content into consistent DOCX and Markdown using reusable
-  Style Packs, deterministic rendering, and validation.
+  Shared academic formatting and export engine. Converts structured outputs from
+  AI paper deep reading, academic writing, literature review, peer review,
+  reviewer response, proposals, theses, and research reports into consistent
+  editable DOCX and clean Markdown using deterministic Style Packs and QA.
 
 skill_file: ../SKILL.md
-content_schema: ../schemas/document-content.schema.json
-style_schema: ../schemas/style-pack.schema.json
-request_schema: ../schemas/delivery-request.schema.json
+style_schema_file: ../schemas/style-pack.schema.json
+document_schema_file: ../schemas/document-content.schema.json
 
 trigger_phrases:
+  - export research report
+  - format academic document
+  - generate Word report
   - 导出 Word
-  - 导出 Markdown
-  - 生成 Word 文档
-  - 按格式排版
-  - 文档排版
-  - 学术报告导出
+  - 科研文档排版
   - 论文精读报告导出
-  - reviewer response export
-  - format research report
-  - export academic report
+  - 学术文档格式化
 
 outputs:
   - docx
   - markdown
 
-constraints:
-  preserve_content: true
-  deterministic_formatting: true
-  visual_qa_recommended_for_docx: true
+principles:
+  - upstream skills own scientific content
+  - deterministic code owns final formatting
+  - named Word styles are required
+  - human-facing reports hide backend enums by default
+  - deep-reading evidence is deduplicated by default
+  - DOCX must pass structural QA and visual QA when rendering is available

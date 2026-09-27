@@ -1,37 +1,86 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:scholar-document-delivery:style-pack:1.0",
-  "title": "Scholar Document Delivery Style Pack",
+  "$id": "urn:scholar-format-engine:style-pack:1.1",
+  "title": "Scholar-Format-Engine Style Pack",
   "type": "object",
   "additionalProperties": false,
-  "required": ["pack", "page", "features", "roles", "table"],
+  "required": [
+    "pack",
+    "page",
+    "features",
+    "roles",
+    "table"
+  ],
   "properties": {
     "pack": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name", "version", "description"],
+      "required": [
+        "name",
+        "version",
+        "description"
+      ],
       "properties": {
-        "name": {"type": "string"},
-        "version": {"type": "string"},
-        "description": {"type": "string"}
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
       }
     },
     "page": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["size", "orientation", "margins_mm"],
+      "required": [
+        "size",
+        "orientation",
+        "margins_mm"
+      ],
       "properties": {
-        "size": {"type": "string", "enum": ["A4", "LETTER"]},
-        "orientation": {"type": "string", "enum": ["portrait", "landscape"]},
+        "size": {
+          "type": "string",
+          "enum": [
+            "A4",
+            "LETTER"
+          ]
+        },
+        "orientation": {
+          "type": "string",
+          "enum": [
+            "portrait",
+            "landscape"
+          ]
+        },
         "margins_mm": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["top", "bottom", "left", "right"],
+          "required": [
+            "top",
+            "bottom",
+            "left",
+            "right"
+          ],
           "properties": {
-            "top": {"type": "number", "minimum": 0},
-            "bottom": {"type": "number", "minimum": 0},
-            "left": {"type": "number", "minimum": 0},
-            "right": {"type": "number", "minimum": 0}
+            "top": {
+              "type": "number",
+              "minimum": 0
+            },
+            "bottom": {
+              "type": "number",
+              "minimum": 0
+            },
+            "left": {
+              "type": "number",
+              "minimum": 0
+            },
+            "right": {
+              "type": "number",
+              "minimum": 0
+            }
           }
         }
       }
@@ -39,33 +88,112 @@
     "features": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["toc", "page_numbers", "metadata_table", "header_text", "footer_text"],
+      "required": [
+        "toc",
+        "page_numbers",
+        "metadata_table",
+        "header_text",
+        "footer_text"
+      ],
       "properties": {
-        "toc": {"type": "boolean"},
-        "toc_title": {"type": "string"},
-        "toc_page_break_after": {"type": "boolean"},
-        "page_numbers": {"type": "boolean"},
-        "metadata_table": {"type": "boolean"},
-        "header_text": {"type": ["string", "null"]},
-        "footer_text": {"type": ["string", "null"]},
-        "markdown_front_matter": {"type": "boolean"}
+        "toc": {
+          "type": "boolean"
+        },
+        "toc_title": {
+          "type": "string"
+        },
+        "toc_page_break_after": {
+          "type": "boolean"
+        },
+        "page_numbers": {
+          "type": "boolean"
+        },
+        "metadata_table": {
+          "type": "boolean"
+        },
+        "header_text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "footer_text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "markdown_front_matter": {
+          "type": "boolean"
+        },
+        "cover_page": {
+          "type": "boolean"
+        },
+        "cover_page_break_after_metadata": {
+          "type": "boolean"
+        },
+        "major_section_page_break": {
+          "type": "boolean"
+        }
       }
     },
     "roles": {
       "type": "object",
       "minProperties": 1,
-      "additionalProperties": {"$ref": "#/$defs/role_style"}
+      "additionalProperties": {
+        "$ref": "#/$defs/role_style"
+      }
     },
     "table": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["preset", "repeat_header", "autofit", "header_fill", "border_color"],
+      "required": [
+        "preset",
+        "repeat_header",
+        "autofit",
+        "header_fill",
+        "border_color"
+      ],
       "properties": {
-        "preset": {"type": "string", "enum": ["three_line", "grid", "minimal"]},
-        "repeat_header": {"type": "boolean"},
-        "autofit": {"type": "boolean"},
-        "header_fill": {"type": ["string", "null"]},
-        "border_color": {"type": "string"}
+        "preset": {
+          "type": "string",
+          "enum": [
+            "three_line",
+            "grid",
+            "minimal"
+          ]
+        },
+        "repeat_header": {
+          "type": "boolean"
+        },
+        "autofit": {
+          "type": "boolean"
+        },
+        "header_fill": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "border_color": {
+          "type": "string"
+        },
+        "cell_margin_mm": {
+          "type": "number",
+          "minimum": 0
+        },
+        "stripe_fill": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "metadata_fill": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
     "callouts": {
@@ -74,8 +202,44 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "fill": {"type": ["string", "null"]},
-          "border_color": {"type": ["string", "null"]}
+          "fill": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "border_color": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "presentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "humanize_enums": {
+          "type": "boolean"
+        },
+        "show_status_labels": {
+          "type": "boolean"
+        },
+        "show_technical_metadata": {
+          "type": "boolean"
+        },
+        "evidence_mode": {
+          "type": "string",
+          "enum": [
+            "inline_all",
+            "inline_first",
+            "index_only"
+          ]
+        },
+        "evidence_index": {
+          "type": "boolean"
         }
       }
     }
@@ -84,38 +248,109 @@
     "font": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["latin", "east_asia", "size_pt", "bold", "italic", "color"],
+      "required": [
+        "latin",
+        "east_asia",
+        "size_pt",
+        "bold",
+        "italic",
+        "color"
+      ],
       "properties": {
-        "latin": {"type": "string"},
-        "east_asia": {"type": "string"},
-        "size_pt": {"type": "number", "exclusiveMinimum": 0},
-        "bold": {"type": "boolean"},
-        "italic": {"type": "boolean"},
-        "color": {"type": "string", "pattern": "^[0-9A-Fa-f]{6}$"}
+        "latin": {
+          "type": "string"
+        },
+        "east_asia": {
+          "type": "string"
+        },
+        "size_pt": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "bold": {
+          "type": "boolean"
+        },
+        "italic": {
+          "type": "boolean"
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^[0-9A-Fa-f]{6}$"
+        }
       }
     },
     "paragraph": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["alignment", "line_spacing", "space_before_pt", "space_after_pt", "first_line_indent_chars", "left_indent_cm", "right_indent_cm", "keep_with_next"],
+      "required": [
+        "alignment",
+        "line_spacing",
+        "space_before_pt",
+        "space_after_pt",
+        "first_line_indent_chars",
+        "left_indent_cm",
+        "right_indent_cm",
+        "keep_with_next"
+      ],
       "properties": {
-        "alignment": {"type": "string", "enum": ["left", "center", "right", "justify"]},
-        "line_spacing": {"type": "number", "exclusiveMinimum": 0},
-        "space_before_pt": {"type": "number", "minimum": 0},
-        "space_after_pt": {"type": "number", "minimum": 0},
-        "first_line_indent_chars": {"type": "number", "minimum": 0},
-        "left_indent_cm": {"type": "number", "minimum": 0},
-        "right_indent_cm": {"type": "number", "minimum": 0},
-        "keep_with_next": {"type": "boolean"}
+        "alignment": {
+          "type": "string",
+          "enum": [
+            "left",
+            "center",
+            "right",
+            "justify"
+          ]
+        },
+        "line_spacing": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "space_before_pt": {
+          "type": "number",
+          "minimum": 0
+        },
+        "space_after_pt": {
+          "type": "number",
+          "minimum": 0
+        },
+        "first_line_indent_chars": {
+          "type": "number",
+          "minimum": 0
+        },
+        "left_indent_cm": {
+          "type": "number",
+          "minimum": 0
+        },
+        "right_indent_cm": {
+          "type": "number",
+          "minimum": 0
+        },
+        "keep_with_next": {
+          "type": "boolean"
+        },
+        "page_break_before": {
+          "type": "boolean"
+        },
+        "widow_control": {
+          "type": "boolean"
+        }
       }
     },
     "role_style": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["font", "paragraph"],
+      "required": [
+        "font",
+        "paragraph"
+      ],
       "properties": {
-        "font": {"$ref": "#/$defs/font"},
-        "paragraph": {"$ref": "#/$defs/paragraph"}
+        "font": {
+          "$ref": "#/$defs/font"
+        },
+        "paragraph": {
+          "$ref": "#/$defs/paragraph"
+        }
       }
     }
   }

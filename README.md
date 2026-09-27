@@ -1,15 +1,15 @@
-# Scholar Document Delivery
+# Scholar-Format-Engine
 
-A reusable formatting and export skill for research products.
+A shared formatting and export engine for research products.
 
-It sits **after** content-generation skills such as AI paper deep reading, academic writing, literature review, peer review, reviewer response, thesis/proposal drafting, and research reporting.
+It converts structured outputs from AI paper deep reading, academic writing, literature review, peer review, reviewer response, thesis/proposal drafting, and research reports into consistent editable Word documents and clean Markdown.
 
-## Core idea
+## Architecture
 
 ```text
 Domain result JSON
       ↓
-Adapter (optional)
+Adapter
       ↓
 DocumentIR
       ↓
@@ -19,104 +19,95 @@ Deterministic renderer
       ↓
 DOCX / Markdown
       ↓
-Validation / visual QA
+Structural QA / visual QA
 ```
 
-The reasoning skill owns the content. This skill owns the final document.
+The upstream reasoning skill owns content. Scholar-Format-Engine owns presentation and delivery.
 
-## Why this exists
+## What v1.1 improves
 
-Without a shared delivery layer, every research feature ends up re-implementing fonts, headings, tables, evidence blocks, page setup, Word export, and Markdown export. This package centralizes those concerns.
-
-## Included Style Packs
-
-- `scholar-default.yaml`
-- `ai-deep-reading.yaml`
-- `academic-paper.yaml`
-- `literature-review.yaml`
-- `peer-review-report.yaml`
-- `reviewer-response.yaml`
+- Renamed from `scholar-document-delivery` to `Scholar-Format-Engine`.
+- Real Word named styles are part of the delivery contract.
+- Better bilingual typography and report spacing.
+- Compact metadata block instead of a generic header table.
+- Human-readable labels for deep-reading backend enums.
+- Deep-reading v1.3 compatibility.
+- Author limitations vs analysis limitations rendered separately.
+- Paper-internal evidence support vs external verification rendered separately.
+- Evidence de-duplication (`inline_first`) plus a single evidence index appendix.
+- Open questions, reading guide, contradiction handling, and novelty-verification rendering.
+- Improved table padding, light row striping, and callout spacing.
+- DOCX structural validator and QA wrapper.
 
 ## Quick start
-
-Requires Python 3.10 or newer.
-
-Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Generate Word from canonical DocumentIR:
+Deep-reading result → Word:
 
 ```bash
 python scripts/compile.py \
-  --input examples/document.example.json \
-  --style style-packs/ai-deep-reading.yaml \
-  --format docx \
-  --output /tmp/example.docx
-```
-
-Generate Markdown:
-
-```bash
-python scripts/compile.py \
-  --input examples/document.example.json \
-  --style style-packs/ai-deep-reading.yaml \
-  --format md \
-  --output /tmp/example.md
-```
-
-Generate a report directly from a PaperScope-style deep-reading result:
-
-```bash
-python scripts/compile.py \
-  --input examples/deep-reading-result.example.json \
+  --input examples/deep-reading-result-v1.3.example.json \
   --adapter deep-reading \
   --style style-packs/ai-deep-reading.yaml \
   --format docx \
   --output /tmp/deep-reading.docx
 ```
 
-Generate a report from the PaperScope AI Reader service/API envelope used by the local paper assistant:
+Deep-reading result → Markdown:
 
 ```bash
 python scripts/compile.py \
-  --input ai-reader-result.json \
-  --adapter ai-reader \
+  --input examples/deep-reading-result-v1.3.example.json \
+  --adapter deep-reading \
   --style style-packs/ai-deep-reading.yaml \
   --format md \
-  --output /tmp/ai-reader-report.md
+  --output /tmp/deep-reading.md
 ```
 
-Render DOCX pages for visual QA:
+Structural QA:
 
 ```bash
-python scripts/render_docx_preview.py /tmp/deep-reading.docx --output-dir /tmp/deep-reading-preview
+python scripts/validate_docx_structure.py /tmp/deep-reading.docx
 ```
 
-## Current scope
+Render pages for visual QA:
+
+```bash
+python scripts/qa_docx.py /tmp/deep-reading.docx --preview-dir /tmp/deep-reading-preview
+```
+
+## Included Style Packs
+
+- Scholar default
+- AI deep reading
+- Academic paper
+- Literature review
+- Peer-review report
+- Reviewer response
+
+## Scope
 
 First-class:
 
 - structured JSON → DOCX
 - structured JSON → Markdown
-- PaperScope deep-reading JSON adapter
+- deep-reading adapter
 - reusable YAML Style Packs
-- typography / tables / callouts / captions / images / equations-as-text
-- static TOC / headers / footers / page-number fields
+- named Word styles
+- tables / callouts / captions / images / equation text
+- static TOC
+- headers / footers / PAGE fields
 - structural validation
-- optional DOCX page preview through LibreOffice + `pdftoppm`
+- optional visual QA
 
-Deliberately deferred:
+Deferred:
 
 - arbitrary legacy Word reformatting
-- uploaded Word-template style extraction
-- true LaTeX-to-OMML equation conversion
+- Word-template reverse engineering
+- advanced LaTeX → OMML conversion
 - citation-style rewriting
-- PDF as a first-class user export
-- complex floating layouts / posters / brochures
-
-## Design principle
-
-The package uses original implementation code. It does not bundle code from the third-party formatting projects used as conceptual references. See `THIRD_PARTY_NOTICES.md`.
+- first-class PDF export
+- poster/brochure/floating-layout authoring

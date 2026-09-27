@@ -4,7 +4,7 @@
   "document_kind": "research_report",
   "language": "zh-CN",
   "title": "科研报告示例",
-  "subtitle": "Scholar Document Delivery 示例文档",
+  "subtitle": "Scholar-Format-Engine 示例文档",
   "metadata": {
     "作者": "Example User",
     "日期": "2026-09-26",
@@ -57,12 +57,27 @@
       "type": "table",
       "role": "table",
       "caption": "表 1 交付层职责",
-      "headers": ["模块", "职责"],
+      "headers": [
+        "模块",
+        "职责"
+      ],
       "rows": [
-        ["上游 Skill", "负责内容与科研判断"],
-        ["DocumentIR", "负责统一结构"],
-        ["Style Pack", "负责格式策略"],
-        ["Renderer", "负责确定性输出"]
+        [
+          "上游 Skill",
+          "负责内容与科研判断"
+        ],
+        [
+          "DocumentIR",
+          "负责统一结构"
+        ],
+        [
+          "Style Pack",
+          "负责格式策略"
+        ],
+        [
+          "Renderer",
+          "负责确定性输出"
+        ]
       ]
     },
     {

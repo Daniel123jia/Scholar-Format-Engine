@@ -1,0 +1,380 @@
+{
+  "schema_version": "1.3",
+  "analysis_type": "deep_reading",
+  "input": {
+    "source_type": "parsed_pdf",
+    "reading_mode": "standard",
+    "reading_goal": "精读",
+    "user_question": null,
+    "provided_materials": [
+      "parsed body text",
+      "section labels"
+    ]
+  },
+  "papers": [
+    {
+      "paper_id": "paper-001",
+      "identity": {
+        "title": "Example Method Paper",
+        "authors": [
+          "A. Author"
+        ],
+        "venue": null,
+        "year": 2026,
+        "doi": null,
+        "arxiv": null,
+        "url": null,
+        "file_id": "file-001",
+        "version_note": "Analyzed uploaded PDF version"
+      },
+      "source_boundary": {
+        "evidence_grade": "E2_BODY_TEXT",
+        "evidence_coverage": {
+          "level": "sufficient",
+          "available_materials": [
+            "metadata",
+            "abstract",
+            "body_text",
+            "references"
+          ],
+          "missing_materials": [
+            "figures",
+            "tables",
+            "equations",
+            "appendix",
+            "supplement"
+          ],
+          "note": "Readable body text is available; visual artifacts were not independently inspected."
+        },
+        "locator_mode": "structure_grounded",
+        "context_mode": "paper_only",
+        "boundary_note": "Claims may be grounded to sections, not PDF pages; field novelty is not externally verified."
+      },
+      "evidence_refs": [
+        {
+          "id": "ev-001",
+          "source_type": "paper",
+          "evidence_type": "abstract",
+          "source": "Analyzed paper",
+          "locator_mode": "structure_grounded",
+          "location": {
+            "section": "Abstract",
+            "page": null,
+            "figure": null,
+            "table": null,
+            "equation": null
+          },
+          "source_block_id": "b-001",
+          "snippet": "We propose a local matching method for few-shot classification.",
+          "paraphrase": "The abstract states that the method uses local matching for few-shot classification.",
+          "verification_status": "verified"
+        },
+        {
+          "id": "ev-002",
+          "source_type": "paper",
+          "evidence_type": "body_text",
+          "source": "Analyzed paper",
+          "locator_mode": "structure_grounded",
+          "location": {
+            "section": "Method",
+            "page": null,
+            "figure": null,
+            "table": null,
+            "equation": null
+          },
+          "source_block_id": "b-010",
+          "snippet": "Each query descriptor is compared with support descriptors and the similarities are aggregated.",
+          "paraphrase": "The method aggregates descriptor-level query-support similarities.",
+          "verification_status": "verified"
+        }
+      ],
+      "paper_map": {
+        "paper_type": "method",
+        "abstract_summary": "A local-matching method for few-shot classification.",
+        "section_outline": [
+          {
+            "title": "Method",
+            "summary": "Defines descriptor-level matching.",
+            "location": {
+              "section": "Method",
+              "page": null,
+              "figure": null,
+              "table": null,
+              "equation": null
+            }
+          }
+        ],
+        "figures": [],
+        "tables": [],
+        "equations": [],
+        "datasets": [
+          "ExampleSet"
+        ],
+        "metrics": [
+          "accuracy"
+        ],
+        "baselines": [
+          "Global matching"
+        ],
+        "ablations": [],
+        "main_references": [
+          "Prior local matching work"
+        ]
+      },
+      "research_question": {
+        "text": "Can descriptor-level matching improve few-shot classification relative to global matching?",
+        "status": "inferred",
+        "evidence_refs": [
+          "ev-001"
+        ],
+        "support_strength": "moderate"
+      },
+      "method_summary": {
+        "summary": {
+          "text": "The method performs descriptor-level query-to-support matching.",
+          "status": "reported",
+          "evidence_refs": [
+            "ev-002"
+          ],
+          "support_strength": "strong"
+        },
+        "previous_approach": {
+          "text": "The paper contrasts the method with global matching.",
+          "status": "reported",
+          "evidence_refs": [
+            "ev-001"
+          ],
+          "support_strength": "moderate"
+        },
+        "proposed_change": {
+          "text": "Replace global matching with local descriptor aggregation.",
+          "status": "inferred",
+          "evidence_refs": [
+            "ev-001",
+            "ev-002"
+          ],
+          "support_strength": "moderate"
+        },
+        "mechanism": {
+          "text": "Query descriptors are compared with support descriptors and similarities are aggregated.",
+          "status": "reported",
+          "evidence_refs": [
+            "ev-002"
+          ],
+          "support_strength": "strong"
+        },
+        "expected_benefit": {
+          "text": "The design may preserve local discriminative information.",
+          "status": "inferred",
+          "evidence_refs": [
+            "ev-002"
+          ],
+          "support_strength": "moderate"
+        },
+        "main_modules": [
+          {
+            "module_name": "Local Matching",
+            "purpose": "Compute query-support local similarity",
+            "input": "Query and support descriptors",
+            "operation": "Compare descriptors and aggregate similarity",
+            "output": "Class similarity",
+            "why_needed": "Avoid relying only on a single global vector",
+            "measured_effect": null,
+            "evidence_refs": [
+              "ev-002"
+            ]
+          }
+        ],
+        "assumptions": [
+          {
+            "assumption_id": "as-001",
+            "assumption_text": "Local descriptor matches are sufficiently discriminative.",
+            "provenance": "inferred",
+            "risk_level": "high",
+            "status": "inferred",
+            "evidence_refs": [
+              "ev-002"
+            ],
+            "failure_mode": "Noisy descriptors could dominate class similarity.",
+            "testability": "Mask or reweight descriptors and measure sensitivity."
+          }
+        ]
+      },
+      "contributions": [
+        {
+          "text": "The paper integrates local matching into a few-shot classifier.",
+          "status": "reported",
+          "evidence_refs": [
+            "ev-001"
+          ],
+          "support_strength": "moderate"
+        }
+      ],
+      "novelty_verification": {
+        "status": "paper_only",
+        "paper_relative_delta": {
+          "text": "Relative to the paper-framed baseline, the change is global-to-local matching.",
+          "status": "inferred",
+          "evidence_refs": [
+            "ev-001",
+            "ev-002"
+          ],
+          "support_strength": "moderate"
+        },
+        "field_novelty": null
+      },
+      "evaluation_or_findings": [
+        {
+          "text": "The paper reports improved accuracy on its tested setup.",
+          "status": "reported",
+          "evidence_refs": [
+            "ev-001"
+          ],
+          "support_strength": "moderate"
+        }
+      ],
+      "author_acknowledged_limitations": [],
+      "unresolved_unknowns": [
+        "Current materials do not establish cross-domain robustness."
+      ],
+      "claim_evidence": [
+        {
+          "claim_id": "cl-001",
+          "importance": "core",
+          "claim": {
+            "text": "The method uses descriptor-level matching instead of only global matching.",
+            "status": "reported"
+          },
+          "evidence_refs": [
+            "ev-001",
+            "ev-002"
+          ],
+          "paper_internal_support": "strong",
+          "support_reason": "The abstract and method section directly describe local descriptor matching.",
+          "scope_boundary": "Supports method design, not universal performance superiority.",
+          "unsupported_stronger_claim": "Local matching is universally superior across tasks and domains.",
+          "what_would_strengthen_it": "Run matched-backbone comparisons across multiple datasets and domains.",
+          "external_verification_status": "not_checked"
+        }
+      ],
+      "evidence_audit": {
+        "paper_internal_support": "moderate",
+        "external_verification_status": "not_checked",
+        "strongly_supported": [
+          {
+            "text": "The method uses descriptor-level aggregation.",
+            "status": "reported",
+            "evidence_refs": [
+              "ev-002"
+            ],
+            "support_strength": "strong"
+          }
+        ],
+        "weakly_supported": [],
+        "unsupported_or_overclaimed": [],
+        "missing_evidence": [
+          "No external replication was inspected."
+        ]
+      },
+      "critical_review": {
+        "analysis_limitations": [
+          {
+            "text": "Robustness to noisy local descriptors is not established.",
+            "status": "inferred",
+            "evidence_refs": [
+              "ev-002"
+            ],
+            "support_strength": "weak"
+          }
+        ],
+        "fragile_assumptions": [
+          {
+            "assumption_id": "as-001",
+            "failure_mode": "Noisy descriptors could dominate class similarity.",
+            "evidence_refs": [
+              "ev-002"
+            ]
+          }
+        ],
+        "reviewer_questions": [
+          "How sensitive is performance to descriptor noise?"
+        ],
+        "reproducibility_risks": [
+          "Exact visual artifacts were not inspected."
+        ],
+        "evaluation_risks": [
+          "Cross-domain generalization is not established."
+        ],
+        "applicability_boundary": [
+          {
+            "text": "Current evidence supports the reported few-shot setup only.",
+            "status": "inferred",
+            "evidence_refs": [
+              "ev-001"
+            ],
+            "support_strength": "moderate"
+          }
+        ]
+      },
+      "open_questions": [
+        {
+          "question": "How sensitive is local matching to uninformative descriptors?",
+          "origin": "analysis_derived",
+          "why_it_matters": "The core similarity aggregates many local matches.",
+          "suggested_validation": "Stress-test descriptor masking, weighting, and noise injection while holding the backbone fixed.",
+          "evidence_refs": [
+            "ev-002"
+          ]
+        }
+      ],
+      "reading_guide": {
+        "items": [
+          {
+            "priority": "must_read",
+            "target_type": "section",
+            "target_label": "Method",
+            "reason": "Defines the local matching mechanism.",
+            "evidence_refs": [
+              "ev-002"
+            ]
+          }
+        ],
+        "twenty_minute_path": [
+          "Abstract",
+          "Method",
+          "Experiments/Discussion if available"
+        ]
+      },
+      "contradictions": [],
+      "judgment_card": {
+        "one_sentence_takeaway": "The paper replaces global matching with descriptor-level matching, with bounded evidence for the tested setup.",
+        "paper_internal_evidence_strength": "moderate",
+        "research_value": {
+          "methodological": {
+            "level": "medium",
+            "rationale": "The design change is clear and transferable."
+          },
+          "empirical": {
+            "level": "medium",
+            "rationale": "The paper reports benchmark evidence, but visual artifacts were not inspected."
+          },
+          "application": {
+            "level": "unclear",
+            "rationale": "Deployment robustness is not established."
+          }
+        },
+        "reading_priority": {
+          "level": "read_core_sections",
+          "reason": "The method is concise; the Method section carries most of the value."
+        },
+        "who_should_read": [
+          "Few-shot learning researchers",
+          "Metric-learning practitioners"
+        ]
+      }
+    }
+  ],
+  "global_limitations": [
+    "This example is synthetic and demonstrates schema structure only."
+  ]
+}

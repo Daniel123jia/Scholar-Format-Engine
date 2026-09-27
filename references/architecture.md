@@ -1,6 +1,6 @@
 # Architecture
 
-Scholar Document Delivery is a shared final-mile layer for research products.
+Scholar-Format-Engine is a shared final-mile layer for research products.
 
 ## Separation of responsibilities
 

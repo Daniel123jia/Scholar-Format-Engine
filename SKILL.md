@@ -1,163 +1,140 @@
 ---
-name: scholar-document-delivery
-description: Convert structured academic/research content into consistent, editable Word (.docx) and Markdown (.md) deliverables using reusable Style Packs, deterministic rendering, and QA. Use after upstream skills such as AI paper deep reading, academic writing, literature review, peer review, reviewer response, thesis/proposal drafting, or research reports have produced structured content.
+name: Scholar-Format-Engine
+description: Shared formatting and export engine for academic/research products. Convert structured outputs from paper deep reading, academic writing, literature review, peer review, reviewer response, thesis/proposal, and research reports into consistent editable DOCX and clean Markdown using reusable Style Packs, deterministic rendering, and QA.
 ---
 
-# Scholar Document Delivery
+# Scholar-Format-Engine
 
-Use this skill as the common document-delivery layer for a research platform. Upstream skills decide **what the content says**; this skill decides **how that content is structured, formatted, exported, and quality-checked**.
+Scholar-Format-Engine is the common **document formatting and delivery layer** for a research platform.
 
-The default architecture is:
+Upstream skills decide **what the content says**. Scholar-Format-Engine decides **how the content is presented, formatted, exported, and checked**.
 
 ```text
 Upstream research skill
         ↓
-structured domain result
+structured domain JSON
         ↓
-Adapter (optional)
+Adapter
         ↓
-DocumentIR (canonical document-content JSON)
+DocumentIR
         ↓
 Style Pack
         ↓
-Deterministic Renderer
+Deterministic renderer
         ↓
 DOCX / Markdown
         ↓
-Validation + optional visual QA
+Structural validation + visual QA
 ```
 
-Do not put domain reasoning such as paper interpretation, novelty judgment, literature synthesis, reviewer criticism, or hypothesis generation into this skill. Those belong upstream.
+Do not move domain reasoning into this skill. Paper interpretation, novelty judgment, literature synthesis, reviewer criticism, hypothesis generation, and scientific conclusions belong to the upstream skill.
 
 ---
 
-## Primary goals
+## Core principles
 
-1. Produce editable `.docx` files with stable typography, heading hierarchy, page setup, tables, callouts, captions, headers/footers, page numbers, and optional TOC.
-2. Produce clean `.md` files that preserve document structure without pretending Markdown controls fonts, margins, or page layout.
-3. Reuse the same Style Pack across AI deep reading, academic writing, literature review, peer review, reviewer response, proposals, and general research reports.
-4. Keep formatting deterministic: the model may map content into DocumentIR, but code applies the final formatting.
-5. Make delivery auditable: validate the input contract, cross-check referenced assets, and visually inspect DOCX previews when the host environment supports rendering.
+1. **Content and formatting are separate.** Formatting must not silently rewrite scientific meaning.
+2. **Model maps; code executes.** Deterministic code applies fonts, sizes, spacing, margins, tables, headers/footers, and page-number fields.
+3. **Named Word styles are mandatory.** DOCX output must contain real `styles.xml` definitions for Normal, Title, Heading 1/2/3, plus Scholar-Format-Engine semantic styles.
+4. **Human-facing reports hide backend enums by default.** Raw values such as `[reported]`, `moderate`, `E2_BODY_TEXT`, and `structure_grounded` should be translated into readable labels or omitted.
+5. **Evidence is source-grounded.** Verbatim evidence snippets and AI paraphrases must remain visually and semantically distinct.
+6. **Do not repeat the same evidence everywhere.** Deep-reading reports default to `inline_first` evidence plus a single evidence index appendix.
+7. **DOCX is not done until QA passes.** Structural checks must pass and, when rendering is available, every page should be visually inspected.
+8. **Markdown is structure-first.** Do not claim Markdown preserves Word fonts, page margins, pagination, or exact line spacing.
 
 ---
 
-## Inputs
+## First-class inputs
 
-Preferred input is `schemas/document-content.schema.json` (DocumentIR).
+Preferred input is canonical `DocumentIR` conforming to:
 
-Accepted upstream sources include:
+`schemas/document-content.schema.json`
 
-- PaperScope AI Reader service/API result envelopes.
-- AI deep-reading result JSON.
-- Academic manuscript or review result JSON.
-- Peer-review or reviewer-response result JSON.
-- Structured report JSON produced by another skill.
-- Manually authored DocumentIR.
+Bundled adapter support:
 
-If the input is a domain-specific JSON, use an adapter under `scripts/adapters/` or map it to DocumentIR before rendering. The bundled `deep_reading_to_document.py` supports PaperScope-style deep-reading results. The bundled `ai_reader_to_document.py` unwraps the local paper assistant AI Reader service/API envelope and then reuses the deep-reading adapter.
+- `deep-reading` — PaperScope / Scholar AI deep-reading result JSON, including v1.2 and v1.3-style fields.
 
-Do not silently infer missing scientific claims while adapting. Adapters are structural transforms, not reasoning passes.
+Additional upstream skills should add their own adapter under `scripts/adapters/` instead of embedding one-off formatting rules in the renderer.
+
+Adapters are structural transformations only. They must not invent missing scientific claims.
 
 ---
 
 ## Outputs
 
-Supported first-class outputs:
+First-class:
 
-- `.docx` — editable, formatted delivery document.
-- `.md` — clean structure-first Markdown.
+- `.docx` — editable research deliverable with named styles.
+- `.md` — clean structural Markdown.
 
-Optional internal QA output:
+Internal QA:
 
-- rendered page PNGs from a generated DOCX, for visual inspection only.
+- rendered page PNGs for visual inspection.
+- structural DOCX validation report printed by CLI.
 
-Do not expose internal QA images unless requested.
+Do not expose QA previews or intermediate JSON unless requested.
 
 ---
 
-## Style Pack routing
+## Style Packs
 
-Choose one Style Pack unless the caller explicitly provides another:
+Bundled packs:
 
-- `style-packs/scholar-default.yaml` — neutral academic/research report.
-- `style-packs/ai-deep-reading.yaml` — AI paper deep-reading report with evidence callouts.
-- `style-packs/academic-paper.yaml` — manuscript-like academic writing.
-- `style-packs/literature-review.yaml` — literature review / state-of-the-art report.
-- `style-packs/peer-review-report.yaml` — reviewer-style assessment.
-- `style-packs/reviewer-response.yaml` — response-to-reviewers document.
+- `style-packs/scholar-default.yaml`
+- `style-packs/ai-deep-reading.yaml`
+- `style-packs/academic-paper.yaml`
+- `style-packs/literature-review.yaml`
+- `style-packs/peer-review-report.yaml`
+- `style-packs/reviewer-response.yaml`
 
-A Style Pack may control page size, margins, fonts, heading levels, paragraph spacing, table style, callouts, metadata presentation, TOC, header/footer, and page numbering.
+A Style Pack controls:
 
-Formal school, journal, client, or institutional rules always override a generic Style Pack. When a caller supplies exact formatting rules, encode them in a new Style Pack rather than hard-coding one-off exceptions in the renderer.
+- page size/orientation/margins;
+- Latin and East Asian fonts;
+- font sizes and colors;
+- line spacing and paragraph spacing;
+- heading hierarchy;
+- table style and cell padding;
+- callout presentation;
+- metadata presentation;
+- TOC, header, footer, page-number fields;
+- deep-reading presentation policy such as enum humanization and evidence display mode.
+
+Official school, journal, funder, court, client, or institutional rules override generic packs. Encode exact rules in a new Style Pack rather than hard-coding special cases.
+
+---
+
+## Deep-reading presentation rules
+
+The `ai-deep-reading` adapter and Style Pack are designed for Scholar AI deep-reading results.
+
+Default user-facing behavior:
+
+- Report title: `AI 论文精读报告`.
+- Paper title becomes the subtitle.
+- Six primary report sections remain stable.
+- Backend enums are translated into natural language.
+- `reported` / `inferred` / `unknown` are not printed as raw bracket tags.
+- Paper-internal evidence strength and external verification status remain separate.
+- Evidence snippets appear once by default; subsequent references point to evidence IDs.
+- A single `附录：证据索引` collects the evidence actually used.
+- Author-acknowledged limitations and analysis-derived limitations are rendered separately.
+- Open questions and reading-guide output are supported.
+- Novelty verification distinguishes paper-relative delta from externally verified field novelty.
+
+See `references/deep-reading-layout.md` and `references/user-facing-labels.md`.
 
 ---
 
 ## Workflow
 
-### Step 1 — Identify document kind
+### 1. Resolve document kind
 
-Resolve `document_kind` from the input. If the content came from an upstream skill, preserve its semantic structure rather than flattening it into generic paragraphs.
+Preserve the semantic structure produced by the upstream skill. Do not flatten structured claims, evidence, limitations, or reviewer responses into generic paragraphs.
 
-### Step 2 — Normalize to DocumentIR
+### 2. Normalize to DocumentIR
 
-Create a valid object conforming to `schemas/document-content.schema.json`.
-
-Use semantic roles such as:
-
-- `body`
-- `heading1`, `heading2`, `heading3`
-- `evidence`
-- `analysis`
-- `warning`
-- `limitation`
-- `reviewer_comment`
-- `author_response`
-- `caption`
-- `equation`
-
-These roles are formatting hooks only. They must not alter the meaning of the content.
-
-### Step 3 — Select Style Pack
-
-Load and validate the chosen YAML against `schemas/style-pack.schema.json`.
-
-If a role is not defined by the selected pack, fall back to `body` rather than inventing formatting.
-
-### Step 4 — Validate before rendering
-
-Run:
-
-```bash
-python scripts/validate_document.py \
-  --input document.json \
-  --style style-packs/ai-deep-reading.yaml
-```
-
-Validation failures are blockers. Warnings may proceed if they do not threaten content integrity.
-
-### Step 5 — Render
-
-Recommended entry point:
-
-```bash
-python scripts/compile.py \
-  --input document.json \
-  --style style-packs/ai-deep-reading.yaml \
-  --format docx \
-  --output report.docx
-```
-
-For Markdown:
-
-```bash
-python scripts/compile.py \
-  --input document.json \
-  --style style-packs/ai-deep-reading.yaml \
-  --format md \
-  --output report.md
-```
-
-For PaperScope deep-reading JSON:
+For domain-specific JSON, run an adapter. For deep reading:
 
 ```bash
 python scripts/compile.py \
@@ -165,111 +142,111 @@ python scripts/compile.py \
   --adapter deep-reading \
   --style style-packs/ai-deep-reading.yaml \
   --format docx \
-  --output paper_deep_reading.docx
+  --output paper-report.docx
 ```
 
-For the local paper assistant AI Reader result envelope:
+Use `--emit-ir normalized.json` to inspect the normalized structure.
+
+### 3. Validate contracts
+
+```bash
+python scripts/validate_document.py \
+  --input normalized.json \
+  --style style-packs/ai-deep-reading.yaml
+```
+
+Schema errors are blockers.
+
+### 4. Render deterministically
+
+DOCX:
 
 ```bash
 python scripts/compile.py \
-  --input ai-reader-result.json \
-  --adapter ai-reader \
+  --input normalized.json \
   --style style-packs/ai-deep-reading.yaml \
-  --format md \
-  --output paper_deep_reading.md
+  --format docx \
+  --output report.docx
 ```
 
-Use `--emit-ir path.json` when the normalized DocumentIR should be saved for debugging or reuse.
-
-### Step 6 — QA
-
-For DOCX, run structural validation and, when available, render pages for visual review:
+Markdown:
 
 ```bash
-python scripts/render_docx_preview.py report.docx --output-dir preview
+python scripts/compile.py \
+  --input normalized.json \
+  --style style-packs/ai-deep-reading.yaml \
+  --format md \
+  --output report.md
 ```
 
-Then inspect every generated page image before final delivery. Fix clipping, broken tables, missing glyphs, bad spacing, orphan headings, or header/footer defects and re-render.
+### 5. Validate DOCX structure
 
-### Step 7 — Deliver only final artifacts
+```bash
+python scripts/validate_docx_structure.py report.docx
+```
 
-Return the requested `.docx` and/or `.md`. Do not return intermediate JSON, previews, or logs unless the user asks.
+The validator checks for core OOXML parts, named styles, Scholar-Format-Engine styles, PAGE fields, and accidental leakage of raw backend tokens.
 
----
+### 6. Render and visually inspect DOCX
 
-## Markdown rules
+```bash
+python scripts/qa_docx.py report.docx --preview-dir preview
+```
 
-Markdown is a structural export, not a page-layout format.
+Inspect every rendered page. Fix and re-render if there is clipping, broken tables, poor spacing, orphan headings, missing glyphs, or header/footer defects.
 
-Do not claim that Markdown itself preserves:
+### 7. Deliver only final artifacts
 
-- fonts or exact point sizes;
-- page margins;
-- page numbers;
-- exact line spacing;
-- Word-style TOC fields;
-- print pagination.
-
-Use headings, lists, tables, blockquotes, images, code fences, math fences, and optional YAML front matter to preserve structure.
+Return only the requested `.docx` and/or `.md` unless the user asks for debug outputs.
 
 ---
 
-## DOCX rules
+## DOCX requirements
 
-- Use named semantic styles where practical.
-- Set both Latin and East Asian font names for bilingual documents.
-- Prefer paragraph styles over scattered run-level overrides.
-- Keep text content unchanged during formatting unless an upstream skill explicitly requested editing.
-- Use real Word fields for page numbers. Version 1.0 uses a deterministic static TOC so previews remain stable across Word and LibreOffice.
-- Keep evidence snippets visually distinct from AI analysis.
-- Do not label paraphrases as verbatim quotations.
-- Do not fabricate images, captions, references, equations, or source locations during export.
-- Do not overwrite source documents by default.
+- Use actual Word named styles, not only run-level formatting.
+- Set both Latin and East Asian fonts.
+- Keep headings with following content when practical.
+- Apply widow/orphan control where supported.
+- Use real PAGE fields for page numbers.
+- Repeat table header rows when configured.
+- Prevent table rows and callout blocks from splitting when practical.
+- Use readable table cell padding.
+- Keep evidence snippets distinct from AI analysis.
+- Do not fabricate captions, page numbers, references, evidence text, or figures.
+- Do not overwrite source files unless explicitly requested by the caller.
 
 ---
 
-## Content-integrity rules
+## Markdown requirements
 
-1. Rendering must be content-preserving.
-2. Adapters must not add new domain conclusions.
-3. If an upstream result marks content as uncertain, inferred, unsupported, or unverified, preserve that status in the exported document.
-4. Evidence snippets supplied as verified verbatim text may be rendered as quotations; paraphrases must be labeled as paraphrases or analysis.
-5. Missing images or assets must produce a visible warning or validation error, never a fabricated replacement.
-6. If a style rule conflicts with content integrity, content integrity wins.
+Markdown preserves semantic structure, not page layout.
+
+Use:
+
+- headings;
+- paragraphs;
+- ordered/unordered lists;
+- blockquotes/callouts;
+- tables;
+- images;
+- fenced/code or math blocks when applicable;
+- optional YAML front matter.
+
+Do not claim Markdown itself controls fonts, point sizes, page margins, page numbers, or print pagination.
 
 ---
 
 ## Boundaries
 
-This skill is not:
+Scholar-Format-Engine does **not**:
 
-- a paper reader;
-- a literature search engine;
-- a reviewer;
-- a citation verifier;
-- a novelty checker;
-- a thesis-writing agent;
-- a PDF layout-reconstruction tool;
-- a poster/brochure/resume design system.
+- decide whether a scientific claim is correct;
+- perform literature search or novelty verification;
+- rewrite citations into a new style unless an upstream citation tool does so;
+- repair unsupported evidence;
+- invent missing figures, equations, references, or metadata;
+- serve as a PDF-layout restoration engine;
+- automatically reformat arbitrary legacy Word documents in this version;
+- parse arbitrary uploaded Word templates into new Style Packs in this version.
 
-It is a **document delivery and formatting layer**.
-
-For complex journal/school templates, create a dedicated Style Pack or a separate adapter rather than bloating the core renderer.
-
----
-
-## Quality bar
-
-A successful DOCX export should satisfy all of the following:
-
-- opens without repair warnings;
-- contains all source text expected from DocumentIR;
-- heading hierarchy is visible and consistent;
-- Chinese/English mixed text uses configured font families;
-- tables fit the printable width and remain readable;
-- evidence/analysis/reviewer-response blocks remain visually distinguishable;
-- page number/footer/header placement is correct;
-- no clipped or overlapping content appears in visual preview;
-- Markdown export preserves the same logical section order.
-
-Read `references/qa-rules.md` for detailed checks.
+Those can be added as separate capabilities later.
