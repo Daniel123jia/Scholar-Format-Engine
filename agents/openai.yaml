@@ -1,32 +1,29 @@
 name: Scholar-Format-Engine
-version: 1.1.0
+version: 1.2.0
 description: >
-  Shared academic formatting and export engine. Converts structured outputs from
-  AI paper deep reading, academic writing, literature review, peer review,
-  reviewer response, proposals, theses, and research reports into consistent
-  editable DOCX and clean Markdown using deterministic Style Packs and QA.
+  Shared formatting and export engine for academic/research products. Converts
+  structured research outputs into consistent editable DOCX and clean Markdown
+  using reusable Style Packs, deterministic rendering, traceability-aware layouts,
+  and structural/visual QA.
 
 skill_file: ../SKILL.md
-style_schema_file: ../schemas/style-pack.schema.json
-document_schema_file: ../schemas/document-content.schema.json
+schemas:
+  document_ir: ../schemas/document-content.schema.json
+  style_pack: ../schemas/style-pack.schema.json
+  delivery_request: ../schemas/delivery-request.schema.json
 
-trigger_phrases:
-  - export research report
-  - format academic document
-  - generate Word report
-  - 导出 Word
-  - 科研文档排版
-  - 论文精读报告导出
-  - 学术文档格式化
-
-outputs:
+first_class_outputs:
   - docx
   - markdown
 
+adapters:
+  - deep-reading-v1.4
+
 principles:
-  - upstream skills own scientific content
-  - deterministic code owns final formatting
-  - named Word styles are required
-  - human-facing reports hide backend enums by default
-  - deep-reading evidence is deduplicated by default
-  - DOCX must pass structural QA and visual QA when rendering is available
+  - content_and_formatting_are_separate
+  - deterministic_format_execution
+  - real_word_named_styles
+  - hide_backend_jargon
+  - preserve_claim_evidence_traceability
+  - semantic_cards_should_stay_together
+  - render_and_verify_docx_before_delivery

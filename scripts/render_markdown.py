@@ -70,6 +70,10 @@ def render(document: dict, style: dict) -> str:
     for block in document.get("blocks", []):
         t = block.get("type")
         role = block.get("role", "body")
+        if block.get("id"):
+            anchor = ''.join(ch if ch.isalnum() or ch in ('-','_') else '-' for ch in str(block.get("id")))
+            lines.append(f'<a id="{anchor}"></a>')
+            lines.append("")
 
         if t == "heading":
             level = min(max(int(block.get("level", 1)), 1), 6)

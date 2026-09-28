@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:scholar-format-engine:document-content:1.0",
+  "$id": "urn:scholar-format-engine:document-content:1.1",
   "title": "Scholar-Format-Engine DocumentIR",
   "type": "object",
   "additionalProperties": false,
@@ -16,7 +16,7 @@
   "properties": {
     "schema_version": {
       "type": "string",
-      "const": "1.0"
+      "const": "1.1"
     },
     "document_id": {
       "type": "string",
@@ -321,6 +321,20 @@
                 "string",
                 "null"
               ]
+            },
+            "column_widths_pct": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 100
+              },
+              "description": "Optional relative column widths in percent. Length should equal number of columns."
+            },
+            "keep_together": {
+              "type": "boolean",
+              "default": false,
+              "description": "Best-effort keep the table as one visual card when it fits on a page."
             }
           }
         }

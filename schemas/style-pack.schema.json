@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:scholar-format-engine:style-pack:1.1",
+  "$id": "urn:scholar-format-engine:style-pack:1.2",
   "title": "Scholar-Format-Engine Style Pack",
   "type": "object",
   "additionalProperties": false,
@@ -239,6 +239,15 @@
           ]
         },
         "evidence_index": {
+          "type": "boolean"
+        },
+        "compact_front_matter": {
+          "type": "boolean"
+        },
+        "hide_backend_ids": {
+          "type": "boolean"
+        },
+        "evidence_backlinks": {
           "type": "boolean"
         }
       }

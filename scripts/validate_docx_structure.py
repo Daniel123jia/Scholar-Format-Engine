@@ -53,6 +53,10 @@ def validate(path: str | Path) -> tuple[list[str], list[str]]:
                         warnings.append(f"Raw backend status token visible in document: {tok}")
                 if "E2_BODY_TEXT" in text or "E3_BODY_PLUS_ARTIFACTS" in text:
                     warnings.append("Raw Evidence Grade enum is visible in the human-facing document.")
+                if "cl-00" in text:
+                    warnings.append("Raw claim backend id is visible; prefer Claim 1/2/... in human-facing output.")
+                if "ev-00" in text:
+                    warnings.append("Raw evidence backend id is visible; prefer E1/E2/... in human-facing output.")
 
                 fields = " ".join(x.text or "" for x in doc.findall(".//w:instrText", NS))
                 has_page = "PAGE" in fields

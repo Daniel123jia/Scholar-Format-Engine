@@ -1,6 +1,6 @@
-# Scholar-Format-Engine
+# Scholar-Format-Engine v1.2
 
-A shared formatting and export engine for research products.
+A shared deterministic formatting and export engine for research products.
 
 It converts structured outputs from AI paper deep reading, academic writing, literature review, peer review, reviewer response, thesis/proposal drafting, and research reports into consistent editable Word documents and clean Markdown.
 
@@ -11,7 +11,7 @@ Domain result JSON
       ↓
 Adapter
       ↓
-DocumentIR
+DocumentIR v1.1
       ↓
 Style Pack
       ↓
@@ -22,22 +22,20 @@ DOCX / Markdown
 Structural QA / visual QA
 ```
 
-The upstream reasoning skill owns content. Scholar-Format-Engine owns presentation and delivery.
+## v1.2 highlights
 
-## What v1.1 improves
-
-- Renamed from `scholar-document-delivery` to `Scholar-Format-Engine`.
-- Real Word named styles are part of the delivery contract.
-- Better bilingual typography and report spacing.
-- Compact metadata block instead of a generic header table.
-- Human-readable labels for deep-reading backend enums.
-- Deep-reading v1.3 compatibility.
-- Author limitations vs analysis limitations rendered separately.
-- Paper-internal evidence support vs external verification rendered separately.
-- Evidence de-duplication (`inline_first`) plus a single evidence index appendix.
-- Open questions, reading guide, contradiction handling, and novelty-verification rendering.
-- Improved table padding, light row striping, and callout spacing.
-- DOCX structural validator and QA wrapper.
+- Full compatibility with AI Deep Reading v1.4.
+- Compact front matter for research reports.
+- Research judgment card and component-level material coverage.
+- Gap / method / assumptions / experiment-evidence / claim-evidence / open-question rendering.
+- Claim cards rendered as one-cell semantic callouts to reduce awkward cross-page splits.
+- Evidence ids humanized (`E1`) and claim ids humanized (`Claim 1`).
+- Evidence Index shows evidence role and supported claims.
+- Structured 20-minute reading path rendering.
+- Intentional table column widths via DocumentIR `column_widths_pct`.
+- Neutral criticism typography; color reserved mainly for borders/fills.
+- Real Word named styles, page fields, headers/footers, and structural QA.
+- Block bookmarks prepared for traceable document navigation.
 
 ## Quick start
 
@@ -45,22 +43,22 @@ The upstream reasoning skill owns content. Scholar-Format-Engine owns presentati
 pip install -r requirements.txt
 ```
 
-Deep-reading result → Word:
+Deep reading → Word:
 
 ```bash
 python scripts/compile.py \
-  --input examples/deep-reading-result-v1.3.example.json \
+  --input examples/deep-reading-result-v1.4.example.json \
   --adapter deep-reading \
   --style style-packs/ai-deep-reading.yaml \
   --format docx \
   --output /tmp/deep-reading.docx
 ```
 
-Deep-reading result → Markdown:
+Deep reading → Markdown:
 
 ```bash
 python scripts/compile.py \
-  --input examples/deep-reading-result-v1.3.example.json \
+  --input examples/deep-reading-result-v1.4.example.json \
   --adapter deep-reading \
   --style style-packs/ai-deep-reading.yaml \
   --format md \
@@ -73,7 +71,7 @@ Structural QA:
 python scripts/validate_docx_structure.py /tmp/deep-reading.docx
 ```
 
-Render pages for visual QA:
+Visual QA:
 
 ```bash
 python scripts/qa_docx.py /tmp/deep-reading.docx --preview-dir /tmp/deep-reading-preview
@@ -91,23 +89,22 @@ python scripts/qa_docx.py /tmp/deep-reading.docx --preview-dir /tmp/deep-reading
 ## Scope
 
 First-class:
-
 - structured JSON → DOCX
 - structured JSON → Markdown
-- deep-reading adapter
+- deep-reading v1.4 adapter
 - reusable YAML Style Packs
 - named Word styles
-- tables / callouts / captions / images / equation text
+- semantic callouts/tables
+- intentional table widths
 - static TOC
-- headers / footers / PAGE fields
+- header/footer/PAGE fields
 - structural validation
-- optional visual QA
+- render-and-inspect QA
 
 Deferred:
-
 - arbitrary legacy Word reformatting
 - Word-template reverse engineering
-- advanced LaTeX → OMML conversion
+- advanced LaTeX → native OMML conversion
 - citation-style rewriting
 - first-class PDF export
-- poster/brochure/floating-layout authoring
+- complex poster/brochure/floating-layout authoring

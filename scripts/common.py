@@ -7,10 +7,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 import yaml
-try:
-    from jsonschema import Draft202012Validator as SchemaValidator
-except ImportError:  # jsonschema < 4, used by the bundled Python 3.7 runtime.
-    from jsonschema import Draft7Validator as SchemaValidator
+from jsonschema import Draft202012Validator
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_DIR = SKILL_ROOT / "schemas"
@@ -37,29 +34,12 @@ def load_yaml(path: str | Path) -> Dict[str, Any]:
 
 def validate_against_schema(instance: Any, schema_path: str | Path) -> list[str]:
     schema = load_json(schema_path)
-    schema = _compat_schema(schema)
-    validator = SchemaValidator(schema)
+    validator = Draft202012Validator(schema)
     errors = sorted(validator.iter_errors(instance), key=lambda e: list(e.path))
     out = []
     for err in errors:
         path = ".".join(str(p) for p in err.absolute_path) or "<root>"
         out.append(f"{path}: {err.message}")
-    return out
-
-
-def _compat_schema(value: Any) -> Any:
-    if isinstance(value, list):
-        return [_compat_schema(item) for item in value]
-    if isinstance(value, str) and value.startswith("#/$defs/"):
-        return value.replace("#/$defs/", "#/definitions/", 1)
-    if not isinstance(value, dict):
-        return value
-    out = {}
-    for key, item in value.items():
-        if key in {"$schema", "$id"}:
-            continue
-        compat_key = "definitions" if key == "$defs" else key
-        out[compat_key] = _compat_schema(item)
     return out
 
 

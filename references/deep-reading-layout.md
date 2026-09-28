@@ -1,41 +1,80 @@
-# Deep-reading report layout
+# AI Deep-Reading Layout — v1.2
 
-The default AI deep-reading report keeps six stable top-level sections:
+## Front matter
+Prefer a compact first page rather than a mostly empty cover plus a mostly empty TOC page.
 
-1. 论文速览
-2. 研究问题与 Gap
-3. 核心方法与真实创新
-4. 实验与证据
-5. 批判性评价
-6. 开放问题与精读建议
+Show:
+- report title;
+- paper title;
+- author/year/venue/version when available;
+- material coverage summary;
+- evidence locator level;
+- external verification state;
+- compact static TOC.
 
-Optional appendices may follow, especially `附录：证据索引`.
+## 01 论文速览
+Order:
+1. 一句话看懂
+2. 科研判断卡
+3. evidence strength / reading priority / audience
+4. research value
+5. material coverage matrix
 
-## Presentation rules
+## 02 研究问题与 Gap
+Show:
+- research question;
+- author-framed problem;
+- author-claimed gap;
+- PaperScope actual bottleneck;
+- Gap judgment.
 
-- The report title is `AI 论文精读报告`.
-- The paper title is the subtitle.
-- Metadata should be compact and readable, not a debug dump.
-- The one-sentence takeaway is a highlighted callout.
-- Method Diff is preferably rendered as a compact table.
-- Claim–Evidence uses one table per important claim.
-- Paper-internal support and external verification are separate rows.
-- Evidence snippets are shown once by default (`inline_first`).
-- Repeated claims reference evidence IDs without repeating the same source excerpt.
-- A final evidence index contains each used evidence item once.
-- Author-acknowledged limitations and analysis-derived limitations must never be merged.
-- Open questions should show why they matter and how to validate them.
-- Reading guide should identify must-read sections/tables/equations and a compact 20-minute path.
+## 03 核心方法与真实创新
+Show:
+- method summary;
+- 方法差异链（Method Diff）;
+- core modules;
+- key equations when verified;
+- key assumptions with failure/stress-test logic;
+- paper-relative innovation;
+- field-novelty verification state;
+- contributions.
 
-## Word typography baseline
+## 04 实验与证据
+Show:
+- experiment interpretation chains;
+- main results;
+- Claim–Evidence cards;
+- overall paper-internal support;
+- missing validation.
 
-For the default Chinese deep-reading pack:
+Claim cards should use one-cell callouts instead of tall two-column tables so Word can keep the card together when practical.
 
-- A4, portrait.
-- Body: SimSun + Times New Roman, 10.5 pt, ~1.45 line spacing.
-- H1: Microsoft YaHei/Arial, ~15 pt bold.
-- H2: ~12.5 pt bold.
-- H3: ~11.5 pt bold.
-- Evidence: ~9.5 pt with a light blue callout.
-- Tables: ~9.5 pt with light header fill and comfortable cell padding.
-- Header/footer are intentionally light; page numbers use Word PAGE fields.
+## 05 批判性评价
+Keep separate:
+- author-stated limitations/constraints;
+- PaperScope analysis limitations;
+- fragile assumptions;
+- reviewer questions;
+- reproducibility/evaluation risks;
+- applicability boundary;
+- contradictions.
+
+Normal criticism uses neutral dark text. Warning/limitation color should be conveyed primarily with card border/fill.
+
+## 06 开放问题与精读建议
+Show:
+- Open Question cards: question / why it matters / validation / evidence;
+- reading-guide table;
+- structured 20-minute path.
+
+## Evidence appendix
+Use one evidence index at the end.
+Each evidence entry may show:
+- E-number;
+- source excerpt or verification hint;
+- locator;
+- material type;
+- evidence role;
+- claims supported.
+
+Avoid repeating the same long snippet throughout the body.

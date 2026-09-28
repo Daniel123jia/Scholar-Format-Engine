@@ -226,6 +226,23 @@ def setup_header_footer(doc: Document, document: Dict[str, Any], style: Dict[str
                 add_field(r, "PAGE", "1")
 
 
+def add_bookmark(paragraph, name: str | None):
+    if not name:
+        return
+    safe = ''.join(ch if ch.isalnum() or ch == '_' else '_' for ch in str(name))[:36]
+    if not safe:
+        return
+    # Deterministic local id; sufficient for generated documents in this renderer.
+    bid = str(abs(hash(safe)) % 2000000000 + 1)
+    start = OxmlElement("w:bookmarkStart")
+    start.set(qn("w:id"), bid)
+    start.set(qn("w:name"), safe)
+    end = OxmlElement("w:bookmarkEnd")
+    end.set(qn("w:id"), bid)
+    paragraph._p.insert(0, start)
+    paragraph._p.append(end)
+
+
 def add_hyperlink(paragraph, text: str, url: str, role_cfg: Dict[str, Any]):
     part = paragraph.part
     r_id = part.relate_to(url, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink", is_external=True)
@@ -282,6 +299,7 @@ def add_rich_paragraph(doc: Document, block: Dict[str, Any], style: Dict[str, An
                 code=item.get("code", False),
             )
             r.underline = bool(item.get("underline", False))
+    add_bookmark(p, block.get("id"))
     return p
 
 
@@ -300,6 +318,7 @@ def add_heading(doc: Document, block: Dict[str, Any], style: Dict[str, Any]):
     apply_paragraph_format(p, cfg)
     r = p.add_run(block.get("text", ""))
     set_run_font(r, cfg.get("font", {}))
+    add_bookmark(p, block.get("id"))
     return p
 
 
@@ -443,9 +462,24 @@ def add_table(doc: Document, block: Dict[str, Any], style: Dict[str, Any]):
     table = doc.add_table(rows=max(nrows, 1), cols=max(ncols, 1))
     table.alignment = 1
 
+    widths = block.get("column_widths_pct") or []
+    if widths and len(widths) == ncols and sum(float(x) for x in widths) > 0:
+        section = doc.sections[-1]
+        usable_cm = float(section.page_width - section.left_margin - section.right_margin) / 360000.0
+        total = sum(float(x) for x in widths)
+        for j, w in enumerate(widths):
+            width_cm = usable_cm * float(w) / total
+            try:
+                table.columns[j].width = Cm(width_cm)
+                for cell in table.columns[j].cells:
+                    cell.width = Cm(width_cm)
+            except Exception:
+                pass
+
     row_offset = 0
     if headers:
         row = table.rows[0]
+        set_row_cant_split(row)
         row_offset = 1
         if style.get("table", {}).get("repeat_header"):
             set_repeat_table_header(row)
@@ -465,6 +499,7 @@ def add_table(doc: Document, block: Dict[str, Any], style: Dict[str, Any]):
 
     for i, row_values in enumerate(rows):
         row = table.rows[i + row_offset]
+        set_row_cant_split(row)
         for j in range(ncols):
             value = row_values[j] if j < len(row_values) else ""
             cell = row.cells[j]
@@ -481,6 +516,11 @@ def add_table(doc: Document, block: Dict[str, Any], style: Dict[str, Any]):
             r = p.add_run("" if value is None else str(value))
             set_run_font(r, cfg.get("font", {}))
 
+    if block.get("keep_together"):
+        for ridx, row in enumerate(table.rows[:-1]):
+            for cell in row.cells:
+                for p in cell.paragraphs:
+                    p.paragraph_format.keep_with_next = True
     style_table(table, style)
 
     if block.get("note"):
@@ -509,6 +549,7 @@ def add_callout(doc: Document, block: Dict[str, Any], style: Dict[str, Any]):
         top={"val": "nil"}, bottom={"val": "nil"}, right={"val": "nil"}
     )
     p = cell.paragraphs[0]
+    add_bookmark(p, block.get("id"))
     cfg = get_role_cfg(style, role)
     apply_paragraph_format(p, cfg)
     if block.get("title"):
