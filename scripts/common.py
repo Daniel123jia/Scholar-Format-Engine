@@ -7,7 +7,12 @@ from pathlib import Path
 from typing import Any, Dict
 
 import yaml
-from jsonschema import Draft202012Validator, RefResolver
+from jsonschema import RefResolver
+
+try:
+    from jsonschema import Draft202012Validator as JsonSchemaValidator
+except ImportError:
+    from jsonschema import Draft7Validator as JsonSchemaValidator
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_DIR = SKILL_ROOT / "schemas"
@@ -34,8 +39,8 @@ def load_yaml(path: str | Path) -> Dict[str, Any]:
 
 def validate_against_schema(instance: Any, schema_path: str | Path) -> list[str]:
     schema = load_json(schema_path)
-    resolver = RefResolver("#", schema, store={"#": schema, schema.get("$id", ""): schema})
-    validator = Draft202012Validator(schema, resolver=resolver)
+    resolver = RefResolver("#", schema, store={"": schema, "#": schema, schema.get("$id", ""): schema})
+    validator = JsonSchemaValidator(schema, resolver=resolver)
     errors = sorted(validator.iter_errors(instance), key=lambda e: list(e.path))
     out = []
     for err in errors:

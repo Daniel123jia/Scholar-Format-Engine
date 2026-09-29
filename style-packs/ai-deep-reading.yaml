@@ -1,8 +1,8 @@
 pack:
   name: ai-deep-reading
-  version: '1.2'
-  description: Scholar-Format-Engine v1.2 style for traceable, evidence-aware AI paper
-    deep-reading reports.
+  version: '1.3'
+  description: Scholar-Format-Engine v1.3 style for traceable, critical, and guided
+    AI paper deep-reading reports.
 page:
   size: A4
   orientation: portrait
@@ -203,7 +203,7 @@ roles:
       bold: false
       italic: false
       color: 1F2937
-    paragraph:
+    paragraph: &id001
       alignment: left
       line_spacing: 1.35
       space_before_pt: 0
@@ -404,6 +404,15 @@ roles:
       keep_with_next: false
       widow_control: true
       page_break_before: false
+  research_direction:
+    font:
+      latin: Times New Roman
+      east_asia: SimSun
+      size_pt: 10.2
+      bold: false
+      italic: false
+      color: 134E4A
+    paragraph: *id001
 table:
   preset: minimal
   repeat_header: true
@@ -427,14 +436,17 @@ callouts:
     fill: FFF7ED
     border_color: EA580C
   limitation:
-    fill: FEF2F2
-    border_color: DC2626
+    fill: FFF7F7
+    border_color: B91C1C
   reviewer_comment:
     fill: FFF7ED
     border_color: C2410C
   author_response:
     fill: F0FDF4
     border_color: 16A34A
+  research_direction:
+    fill: F0FDFA
+    border_color: 0F766E
 presentation:
   humanize_enums: true
   show_status_labels: false
@@ -444,3 +456,6 @@ presentation:
   compact_front_matter: true
   hide_backend_ids: true
   evidence_backlinks: true
+  show_core_weaknesses: true
+  show_research_directions: true
+  prefer_claim_titles: true

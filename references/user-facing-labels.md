@@ -32,3 +32,10 @@ Do not expose implementation enums by default.
 - as-001 → A1
 
 Do not display JSON `null`. Render its meaning in natural language.
+
+
+## v1.3 additions
+- `core_weaknesses` → “PaperScope 判断的核心缺陷”
+- `research_directions` → “后续研究方向（PaperScope 分析）”
+- `claim_title` → render after “Claim N｜”
+- Research directions are always framed as analysis-derived unless provenance says otherwise.

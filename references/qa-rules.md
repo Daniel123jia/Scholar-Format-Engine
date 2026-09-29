@@ -46,3 +46,12 @@ Do not treat a successfully saved `.docx` as proof of good layout.
 Formatting QA must never silently rewrite scientific content.
 
 If source and output differ in substantive wording or numbers, the delivery fails.
+
+
+## v1.3 deep-reading QA
+
+- No raw `cl-###`, `wk-###`, `rd-###`, `reported`, `paper_only`, or `null` should appear as primary user-facing labels.
+- Core weakness cards must contain why-it-matters, potential impact, and validation.
+- Research direction cards must contain target problem, rationale, validation focus, and a clear analysis-derived boundary note.
+- Claim cards should use descriptive titles.
+- Avoid breaking a short core-weakness or research-direction card across pages.

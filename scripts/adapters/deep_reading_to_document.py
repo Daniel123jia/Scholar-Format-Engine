@@ -640,7 +640,9 @@ def _adapt_one_paper(paper: Dict[str, Any], style: Dict[str, Any] | None, index:
             if item.get("what_would_strengthen_it"): lines.append("如何进一步加强："+_text(item.get("what_would_strengthen_it")))
             if ext: lines.append("外部核验："+EXTERNAL_VERIFICATION_LABELS.get(str(ext),str(ext)))
             if refs: lines.append("依据："+evidence.compact_label(refs))
-            blocks.append({"type":"callout","role":"analysis","title":f"Claim {i}","text":"\n".join(lines),"id":f"claim-{i}"})
+            claim_title=str(item.get("claim_title") or "").strip()
+            visible_title=f"Claim {i}｜{claim_title}" if claim_title else f"Claim {i}"
+            blocks.append({"type":"callout","role":"analysis","title":visible_title,"text":"\n".join(lines),"id":f"claim-{i}"})
             blocks.extend(evidence.callouts(refs))
 
     audit=paper.get("evidence_audit") or {}
@@ -667,6 +669,34 @@ def _adapt_one_paper(paper: Dict[str, Any], style: Dict[str, Any] | None, index:
     if analysis_limits:
         _heading(blocks,"PaperScope 分析出的局限",2 if not multi else 3)
         for item in analysis_limits: _add_statement(blocks,item,evidence,role="body",show_status=show_status)
+    core_weaknesses=crit.get("core_weaknesses") or []
+    if core_weaknesses:
+        _heading(blocks,"PaperScope 判断的核心缺陷",2 if not multi else 3)
+        claim_title_map={str(c.get("claim_id")):str(c.get("claim_title") or "") for c in claims if isinstance(c,dict) and c.get("claim_id")}
+        assumption_index={str(a.get("assumption_id")):idx+1 for idx,a in enumerate(assumptions) if isinstance(a,dict) and a.get("assumption_id")}
+        for i,w in enumerate(core_weaknesses,1):
+            if not isinstance(w,dict): continue
+            refs=[str(x) for x in w.get("evidence_refs") or []]
+            lines=[]
+            if w.get("description"): lines.append("缺陷是什么："+str(w.get("description")))
+            if w.get("why_it_matters"): lines.append("为什么重要："+str(w.get("why_it_matters")))
+            if w.get("potential_impact"): lines.append("潜在影响："+str(w.get("potential_impact")))
+            if w.get("suggested_validation"): lines.append("如何验证："+str(w.get("suggested_validation")))
+            related_claims=[]
+            for cid in w.get("related_claim_ids") or []:
+                ct=claim_title_map.get(str(cid))
+                related_claims.append(ct or str(cid))
+            if related_claims: lines.append("关联主张："+"；".join(related_claims))
+            related_ass=[]
+            for aid in w.get("related_assumption_ids") or []:
+                idx=assumption_index.get(str(aid))
+                related_ass.append(f"A{idx}" if idx else str(aid))
+            if related_ass: lines.append("关联假设："+"、".join(related_ass))
+            if refs: lines.append("依据："+evidence.compact_label(refs))
+            title=str(w.get("title") or "核心缺陷")
+            blocks.append({"type":"callout","role":"limitation","title":f"核心缺陷 {i}｜{title}","text":"\n".join(lines),"id":f"weakness-{i}"})
+            blocks.extend(evidence.callouts(refs))
+
     fragile=crit.get("fragile_assumptions") or []
     if fragile:
         _heading(blocks,"脆弱假设",2 if not multi else 3)
@@ -721,6 +751,22 @@ def _adapt_one_paper(paper: Dict[str, Any], style: Dict[str, Any] | None, index:
             if q.get("suggested_validation"): lines.append("建议如何验证："+str(q.get("suggested_validation")))
             if refs: lines.append("依据："+evidence.compact_label(refs))
             blocks.append({"type":"callout","role":"analysis","title":f"Open Question {i}","text":"\n".join(lines)})
+            blocks.extend(evidence.callouts(refs))
+
+    directions=paper.get("research_directions") or []
+    if directions:
+        _heading(blocks,"后续研究方向（PaperScope 分析）",2 if not multi else 3)
+        for i,rd in enumerate(directions,1):
+            if not isinstance(rd,dict): continue
+            refs=[str(x) for x in rd.get("evidence_refs") or []]
+            lines=[]
+            if rd.get("target_problem"): lines.append("目标问题："+str(rd.get("target_problem")))
+            if rd.get("rationale"): lines.append("为什么值得继续："+str(rd.get("rationale")))
+            if rd.get("validation_focus"): lines.append("优先验证："+str(rd.get("validation_focus")))
+            if rd.get("boundary_note"): lines.append("边界说明："+str(rd.get("boundary_note")))
+            if refs: lines.append("依据："+evidence.compact_label(refs))
+            title=str(rd.get("title") or f"研究方向 {i}")
+            blocks.append({"type":"callout","role":"research_direction","title":f"方向 {i}｜{title}","text":"\n".join(lines),"id":f"research-direction-{i}"})
             blocks.extend(evidence.callouts(refs))
 
     guide=paper.get("reading_guide") or {}

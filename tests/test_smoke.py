@@ -22,7 +22,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix="sfe-test-") as td:
         td = Path(td)
         example = ROOT / "examples/document.example.json"
-        deep = ROOT / "examples/deep-reading-result-v1.4.example.json"
+        deep = ROOT / "examples/deep-reading-result-v1.5.example.json"
         style = ROOT / "style-packs/ai-deep-reading.yaml"
 
         run(ROOT / "scripts/validate_document.py", "--input", example, "--style", style)
@@ -56,6 +56,9 @@ def main():
         assert "Open Question" in md_text
         assert "20 分钟" in md_text
         assert "科研判断卡" in md_text
+        assert "核心缺陷" in md_text
+        assert "后续研究方向" in md_text
+        assert "Core method change" in md_text
 
         with zipfile.ZipFile(deep_docx) as zf:
             names = set(zf.namelist())

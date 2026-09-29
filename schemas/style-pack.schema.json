@@ -249,6 +249,15 @@
         },
         "evidence_backlinks": {
           "type": "boolean"
+        },
+        "show_core_weaknesses": {
+          "type": "boolean"
+        },
+        "show_research_directions": {
+          "type": "boolean"
+        },
+        "prefer_claim_titles": {
+          "type": "boolean"
         }
       }
     }

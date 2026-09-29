@@ -414,7 +414,7 @@
     {
       "type": "callout",
       "role": "analysis",
-      "title": "Claim 1",
+      "title": "Claim 1｜Core method change",
       "text": "核心判断：The method uses descriptor-level matching instead of only global matching.\n论文内部支持：支持充分\n为什么：The abstract and method section directly describe local descriptor matching.\n证据关系：E1（直接支持）：Directly describes the claimed method change.；E2（直接支持）：Directly describes the claimed method change.\n适用边界：Supports method design, not universal performance superiority.\n不能进一步证明：Local matching is universally superior across tasks and domains.\n如何进一步加强：Run matched-backbone comparisons across multiple datasets and domains.\n外部核验：未进行外部复现/核验\n依据：E1、E2",
       "id": "claim-1"
     },
@@ -468,6 +468,19 @@
       "type": "paragraph",
       "role": "body",
       "text": "Robustness to noisy local descriptors is not established."
+    },
+    {
+      "type": "heading",
+      "role": "heading2",
+      "level": 2,
+      "text": "PaperScope 判断的核心缺陷"
+    },
+    {
+      "type": "callout",
+      "role": "limitation",
+      "title": "核心缺陷 1｜Sensitivity to uninformative local descriptors",
+      "text": "缺陷是什么：The class score aggregates many local nearest-neighbor matches without evidence in this synthetic fixture that every descriptor is equally discriminative.\n为什么重要：If background or weak descriptors receive high-similarity neighbors, they can contribute misleading evidence to the final class score.\n潜在影响：The central claim that local matching improves classification may weaken under clutter, domain shift, or fine-grained ambiguity.\n如何验证：Inject descriptor noise or mask foreground/background regions while holding the backbone and support set fixed, then measure class-score and accuracy sensitivity.\n关联主张：Core method change\n关联假设：A1\n依据：E2",
+      "id": "weakness-1"
     },
     {
       "type": "heading",
@@ -551,6 +564,19 @@
       "role": "analysis",
       "title": "Open Question 1",
       "text": "问题：How sensitive is local matching to uninformative descriptors?\n来源：PaperScope 分析得到\n为什么重要：The core similarity aggregates many local matches.\n建议如何验证：Stress-test descriptor masking, weighting, and noise injection while holding the backbone fixed.\n依据：E2"
+    },
+    {
+      "type": "heading",
+      "role": "heading2",
+      "level": 2,
+      "text": "后续研究方向（PaperScope 分析）"
+    },
+    {
+      "type": "callout",
+      "role": "research_direction",
+      "title": "方向 1｜Reliability-aware local matching",
+      "text": "目标问题：Determine whether all local descriptors should contribute equally to image-to-class similarity when some descriptors are background or weakly discriminative.\n为什么值得继续：The method aggregates many local matches and the core weakness concerns sensitivity to uninformative descriptors.\n优先验证：Measure descriptor reliability, class-score sensitivity, and robustness under controlled background/noise perturbations before designing a new mechanism.\n边界说明：This is a PaperScope analysis-derived follow-up direction, not an author-stated proposal.\n依据：E2",
+      "id": "research-direction-1"
     },
     {
       "type": "heading",

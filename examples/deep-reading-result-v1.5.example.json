@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.4",
+  "schema_version": "1.5",
   "analysis_type": "deep_reading",
   "input": {
     "source_type": "parsed_pdf",
@@ -321,7 +321,8 @@
               "relation": "direct",
               "note": "Directly describes the claimed method change."
             }
-          ]
+          ],
+          "claim_title": "Core method change"
         }
       ],
       "evidence_audit": {
@@ -380,6 +381,25 @@
               "ev-001"
             ],
             "support_strength": "moderate"
+          }
+        ],
+        "core_weaknesses": [
+          {
+            "weakness_id": "wk-001",
+            "title": "Sensitivity to uninformative local descriptors",
+            "description": "The class score aggregates many local nearest-neighbor matches without evidence in this synthetic fixture that every descriptor is equally discriminative.",
+            "why_it_matters": "If background or weak descriptors receive high-similarity neighbors, they can contribute misleading evidence to the final class score.",
+            "potential_impact": "The central claim that local matching improves classification may weaken under clutter, domain shift, or fine-grained ambiguity.",
+            "suggested_validation": "Inject descriptor noise or mask foreground/background regions while holding the backbone and support set fixed, then measure class-score and accuracy sensitivity.",
+            "evidence_refs": [
+              "ev-002"
+            ],
+            "related_claim_ids": [
+              "cl-001"
+            ],
+            "related_assumption_ids": [
+              "as-001"
+            ]
           }
         ]
       },
@@ -513,6 +533,22 @@
           "protocol_risks": [
             "Exact table and training-budget details are not included in this synthetic fixture."
           ]
+        }
+      ],
+      "research_directions": [
+        {
+          "direction_id": "rd-001",
+          "title": "Reliability-aware local matching",
+          "target_problem": "Determine whether all local descriptors should contribute equally to image-to-class similarity when some descriptors are background or weakly discriminative.",
+          "rationale": "The method aggregates many local matches and the core weakness concerns sensitivity to uninformative descriptors.",
+          "validation_focus": "Measure descriptor reliability, class-score sensitivity, and robustness under controlled background/noise perturbations before designing a new mechanism.",
+          "evidence_refs": [
+            "ev-002"
+          ],
+          "related_weakness_ids": [
+            "wk-001"
+          ],
+          "boundary_note": "This is a PaperScope analysis-derived follow-up direction, not an author-stated proposal."
         }
       ]
     }

@@ -1,4 +1,4 @@
-# Scholar-Format-Engine v1.2
+# Scholar-Format-Engine v1.3
 
 A shared deterministic formatting and export engine for research products.
 
@@ -22,9 +22,9 @@ DOCX / Markdown
 Structural QA / visual QA
 ```
 
-## v1.2 highlights
+## v1.3 highlights
 
-- Full compatibility with AI Deep Reading v1.4.
+- Full compatibility with AI Deep Reading v1.5.
 - Compact front matter for research reports.
 - Research judgment card and component-level material coverage.
 - Gap / method / assumptions / experiment-evidence / claim-evidence / open-question rendering.
@@ -47,7 +47,7 @@ Deep reading → Word:
 
 ```bash
 python scripts/compile.py \
-  --input examples/deep-reading-result-v1.4.example.json \
+  --input examples/deep-reading-result-v1.5.example.json \
   --adapter deep-reading \
   --style style-packs/ai-deep-reading.yaml \
   --format docx \
@@ -58,7 +58,7 @@ Deep reading → Markdown:
 
 ```bash
 python scripts/compile.py \
-  --input examples/deep-reading-result-v1.4.example.json \
+  --input examples/deep-reading-result-v1.5.example.json \
   --adapter deep-reading \
   --style style-packs/ai-deep-reading.yaml \
   --format md \
@@ -91,7 +91,7 @@ python scripts/qa_docx.py /tmp/deep-reading.docx --preview-dir /tmp/deep-reading
 First-class:
 - structured JSON → DOCX
 - structured JSON → Markdown
-- deep-reading v1.4 adapter
+- deep-reading v1.5 adapter
 - reusable YAML Style Packs
 - named Word styles
 - semantic callouts/tables

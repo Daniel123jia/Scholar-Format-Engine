@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.3.0 — Critical Insight & Guided Follow-up Rendering
+
+- Added rendering for PaperScope core weaknesses.
+- Added rendering for bounded research directions.
+- Added descriptive Claim card titles.
+- Added research-direction visual style and refined limitation styling.
+- Updated layout/QA guidance and fixtures for AI Deep Reading v1.5.
+
+
 ## 1.2.0 — Traceable Research Delivery
 
 - Added AI Deep Reading v1.4 compatibility.

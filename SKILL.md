@@ -1,10 +1,10 @@
 ---
 name: Scholar-Format-Engine
-version: 1.2.0
+version: 1.3.0
 description: Shared academic document formatting and export engine. Convert structured outputs from paper deep reading, academic writing, literature review, peer review, reviewer response, thesis/proposal, and research reports into consistent editable DOCX and clean Markdown using reusable Style Packs, deterministic rendering, traceability-aware layouts, and QA.
 ---
 
-# Scholar-Format-Engine v1.2
+# Scholar-Format-Engine v1.3
 
 Scholar-Format-Engine is the common **document formatting and delivery layer** for Scholar AI / research products.
 
@@ -53,7 +53,7 @@ Preferred canonical input: `DocumentIR` conforming to `schemas/document-content.
 
 Bundled adapter:
 
-- `deep-reading` — supports PaperScope / Scholar AI Deep Reading v1.4, with compatibility fallbacks for earlier v1.2/v1.3 fields where practical.
+- `deep-reading` — supports PaperScope / Scholar AI Deep Reading v1.5, with compatibility fallbacks for earlier v1.2/v1.3 fields where practical.
 
 Future domain skills should add adapters under `scripts/adapters/` rather than hard-code domain semantics in the renderer.
 
@@ -113,7 +113,7 @@ The default Word/Markdown report keeps the stable six-stage structure:
 5. 批判性评价
 6. 开放问题与精读建议
 
-### v1.2 rendering behavior
+### v1.3 rendering behavior
 
 - Compact front matter: avoid spending two nearly empty pages on cover + TOC by default.
 - Show a **科研判断卡** in the overview.
@@ -236,5 +236,17 @@ Scholar-Format-Engine does not:
 - repair unsupported evidence;
 - invent figures/equations/references/metadata;
 - act as a PDF layout-restoration engine;
-- reverse-engineer arbitrary Word templates in v1.2;
+- reverse-engineer arbitrary Word templates in the current release;
 - automatically reformat arbitrary legacy Word documents in v1.2.
+
+
+## Deep Reading v1.5 rendering contract
+
+For AI deep-reading reports, the engine must render the analysis so a research user can scan the logic rather than inspect backend JSON.
+
+- Prefer descriptive `claim_title` headings; raw `cl-###` IDs remain internal.
+- In section 05, render author limitations, PaperScope analysis-derived limitations, then prominent **core weakness** cards with: weakness → why it matters → potential impact → validation.
+- In section 06, render Open Questions, then bounded **research directions**, then guided reading / 20-minute path.
+- Research-direction cards must be clearly labeled as PaperScope-derived unless the upstream content says the author proposed them.
+- Never render placeholders such as “当前材料未说明” as completed analytical content.
+- Preserve evidence traceability: evidence snippets are source text only; analysis text must remain visually distinct.

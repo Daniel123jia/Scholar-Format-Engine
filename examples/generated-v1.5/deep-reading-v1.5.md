@@ -158,7 +158,7 @@ PaperScope 判断的实际瓶颈：The operational bottleneck is whether a spars
 
 <a id="claim-1"></a>
 
-> **Claim 1**
+> **Claim 1｜Core method change**
 > 核心判断：The method uses descriptor-level matching instead of only global matching.
 > 论文内部支持：支持充分
 > 为什么：The abstract and method section directly describe local descriptor matching.
@@ -185,6 +185,19 @@ PaperScope 判断的实际瓶颈：The operational bottleneck is whether a spars
 ## PaperScope 分析出的局限
 
 Robustness to noisy local descriptors is not established.
+
+## PaperScope 判断的核心缺陷
+
+<a id="weakness-1"></a>
+
+> **核心缺陷 1｜Sensitivity to uninformative local descriptors**
+> 缺陷是什么：The class score aggregates many local nearest-neighbor matches without evidence in this synthetic fixture that every descriptor is equally discriminative.
+> 为什么重要：If background or weak descriptors receive high-similarity neighbors, they can contribute misleading evidence to the final class score.
+> 潜在影响：The central claim that local matching improves classification may weaken under clutter, domain shift, or fine-grained ambiguity.
+> 如何验证：Inject descriptor noise or mask foreground/background regions while holding the backbone and support set fixed, then measure class-score and accuracy sensitivity.
+> 关联主张：Core method change
+> 关联假设：A1
+> 依据：E2
 
 ## 脆弱假设
 
@@ -219,6 +232,17 @@ Current evidence supports the reported few-shot setup only.
 > 来源：PaperScope 分析得到
 > 为什么重要：The core similarity aggregates many local matches.
 > 建议如何验证：Stress-test descriptor masking, weighting, and noise injection while holding the backbone fixed.
+> 依据：E2
+
+## 后续研究方向（PaperScope 分析）
+
+<a id="research-direction-1"></a>
+
+> **方向 1｜Reliability-aware local matching**
+> 目标问题：Determine whether all local descriptors should contribute equally to image-to-class similarity when some descriptors are background or weakly discriminative.
+> 为什么值得继续：The method aggregates many local matches and the core weakness concerns sensitivity to uninformative descriptors.
+> 优先验证：Measure descriptor reliability, class-score sensitivity, and robustness under controlled background/noise perturbations before designing a new mechanism.
+> 边界说明：This is a PaperScope analysis-derived follow-up direction, not an author-stated proposal.
 > 依据：E2
 
 ## 精读路线

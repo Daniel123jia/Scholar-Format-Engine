@@ -1,4 +1,4 @@
-# AI Deep-Reading Layout — v1.2
+# AI Deep-Reading Layout — v1.3
 
 ## Front matter
 Prefer a compact first page rather than a mostly empty cover plus a mostly empty TOC page.
@@ -78,3 +78,28 @@ Each evidence entry may show:
 - claims supported.
 
 Avoid repeating the same long snippet throughout the body.
+
+
+## v1.3 additions for Deep Reading v1.5
+
+### Section 05
+Use this visual hierarchy:
+1. 作者明确指出的局限 / 约束
+2. PaperScope 分析出的局限
+3. PaperScope 判断的核心缺陷（2–4 prominent callout cards）
+4. 脆弱假设
+5. Reviewer Questions / reproducibility / evaluation / applicability boundaries
+
+A core weakness card should show: 缺陷是什么 → 为什么重要 → 潜在影响 → 如何验证 → 依据. Use a restrained risk style, not full-page red text.
+
+### Section 06
+Use this hierarchy:
+1. 开放问题
+2. 后续研究方向（PaperScope 分析）
+3. 精读路线
+4. 20 分钟阅读路线
+
+Research directions are not innovation proposals. Render target problem, rationale, validation focus, and boundary note.
+
+### Claim cards
+Prefer `Claim N｜descriptive title` over a bare `Claim N`. The backend ID should not be the visible heading.
