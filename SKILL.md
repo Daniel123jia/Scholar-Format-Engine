@@ -1,14 +1,14 @@
 ---
 name: Scholar-Format-Engine
-version: 1.3.0
-description: Shared academic document formatting and export engine. Convert structured outputs from paper deep reading, academic writing, literature review, peer review, reviewer response, thesis/proposal, and research reports into consistent editable DOCX and clean Markdown using reusable Style Packs, deterministic rendering, traceability-aware layouts, and QA.
+version: 1.4.0
+description: Shared academic document formatting and delivery engine for Scholar AI. Converts structured research outputs into layered, semantically styled DOCX and Markdown with deterministic typography, restrained academic color, evidence appendices, and QA.
 ---
 
-# Scholar-Format-Engine v1.3
+# Scholar-Format-Engine v1.4
 
-Scholar-Format-Engine is the common **document formatting and delivery layer** for Scholar AI / research products.
+Scholar-Format-Engine is the common presentation/export layer for Scholar AI research skills.
 
-Upstream skills decide **what the research content means**. Scholar-Format-Engine decides **how that structured content is presented, formatted, navigated, exported, and checked**.
+Upstream skills decide **what the research content means**. This skill decides **what the user sees first, what is visually emphasized, how detail is layered, and how the final document is exported and checked**.
 
 ```text
 Upstream research skill
@@ -19,92 +19,86 @@ Adapter
         ↓
 DocumentIR
         ↓
-Style Pack
+Style Pack + semantic roles
         ↓
 Deterministic renderer
         ↓
 DOCX / Markdown
         ↓
-Structural validation + visual QA
+Structural validation + render QA
 ```
 
-Do not move domain reasoning into this skill.
+Do not move scientific reasoning into this skill.
 
 ---
 
-## Core principles
+## Core product principle
 
-1. **Content and formatting are separate.** Formatting must not silently rewrite scientific meaning.
-2. **Model maps; code executes.** Fonts, sizes, spacing, margins, tables, headers/footers, page-number fields, and layout rules are deterministic.
-3. **Named Word styles are mandatory.** DOCX output contains real Word styles, not only run-level formatting.
-4. **Human-facing reports hide backend jargon.** Raw values such as `reported`, `E2_BODY_TEXT`, `cl-001`, `ev-003`, and `null` should not appear unless the caller explicitly requests technical output.
-5. **Traceability must survive export.** Important judgments retain evidence labels, source locations, evidence roles, and an evidence index.
-6. **Evidence is de-duplicated.** Long source snippets appear once by default; later references use compact evidence labels.
-7. **Semantic cards should stay visually coherent.** Claim cards, assumptions, evidence callouts, and open questions should not be casually split across pages when they fit on one page.
-8. **Color is semantic, not decorative.** Body text remains neutral; color is mainly used for borders, fills, and small status accents.
-9. **DOCX is not done until QA passes.** Render every page and visually inspect before delivery.
-10. **Markdown is structure-first.** Do not claim Markdown preserves Word pagination or exact typography.
+**The backend can be deep; the visible report must be easy to scan.**
+
+For AI paper deep reading, the default report uses three layers:
+
+1. **3-minute judgment** — what the user must know first.
+2. **Deep reading** — the six-stage analytical report.
+3. **Evidence appendix** — source snippets and traceability for verification.
+
+For a typical 8–15 page method paper, aim for a **4–6 page main report**, excluding the evidence appendix. This is a presentation target, not a scientific truncation rule.
 
 ---
 
-## First-class inputs
+## Semantic styling system
 
-Preferred canonical input: `DocumentIR` conforming to `schemas/document-content.schema.json` v1.1.
+Formatting is not decoration. It communicates meaning.
+
+- **Bold communicates importance.**
+- **Color communicates semantic type.**
+- **Spacing communicates hierarchy.**
+
+Use a restrained academic palette:
+
+- primary indigo/purple: headings, key judgments, assumptions, research directions;
+- evidence blue: claims/evidence;
+- warm amber: weaknesses, risks, items requiring caution;
+- neutral charcoal/gray: body text and secondary metadata.
+
+Do not use a different color for every module. Do not render whole critique sections in bright red.
+
+Named semantic Word styles should be available for roles such as:
+
+- `SFE key_takeaway`
+- `SFE judgment`
+- `SFE claim`
+- `SFE assumption`
+- `SFE risk`
+- `SFE evidence`
+- `SFE research_direction`
+- `SFE reading_path`
+- `SFE secondary`
+
+See `references/semantic-styling.md`.
+
+---
+
+## Inputs and outputs
+
+Preferred canonical input: DocumentIR (`schemas/document-content.schema.json`).
 
 Bundled adapter:
 
-- `deep-reading` — supports PaperScope / Scholar AI Deep Reading v1.5, with compatibility fallbacks for earlier v1.2/v1.3 fields where practical.
+- `deep-reading` — supports AI Deep Reading v1.6 and practical fallbacks for recent earlier versions.
 
-Future domain skills should add adapters under `scripts/adapters/` rather than hard-code domain semantics in the renderer.
+First-class outputs:
 
-Adapters may reorganize presentation structure, but must not invent scientific claims or evidence.
+- `.docx` — editable, styled Word report;
+- `.md` — clean structured Markdown.
 
----
-
-## Outputs
-
-First-class:
-- `.docx` — editable, styled Word deliverable.
-- `.md` — clean structural Markdown.
-
-QA/internal:
-- normalized DocumentIR JSON;
-- rendered page PNGs;
-- structural validation output.
-
-Deliver only requested final artifacts unless debug outputs are requested.
+Internal/QA outputs may include normalized IR, page PNG previews, and validation reports.
 
 ---
 
-## Style Packs
+## AI Deep Reading presentation contract
 
-Bundled packs:
-- `scholar-default.yaml`
-- `ai-deep-reading.yaml`
-- `academic-paper.yaml`
-- `literature-review.yaml`
-- `peer-review-report.yaml`
-- `reviewer-response.yaml`
-
-A Style Pack controls:
-- page size/orientation/margins;
-- Latin and East Asian fonts;
-- font size, weight, and color;
-- heading hierarchy;
-- line/paragraph spacing;
-- table geometry and column proportions;
-- callout fills/borders;
-- metadata and front matter;
-- TOC/header/footer/page numbering;
-- evidence display policy.
-
-Official school/journal/client rules override generic packs. Encode exact requirements in a new Style Pack instead of adding one-off renderer branches.
-
----
-
-## AI deep-reading presentation contract
-
-The default Word/Markdown report keeps the stable six-stage structure:
+Keep the six visible stages stable:
 
 1. 论文速览
 2. 研究问题与 Gap
@@ -113,33 +107,102 @@ The default Word/Markdown report keeps the stable six-stage structure:
 5. 批判性评价
 6. 开放问题与精读建议
 
-### v1.3 rendering behavior
+### Layer 1 — 3-minute judgment
 
-- Compact front matter: avoid spending two nearly empty pages on cover + TOC by default.
-- Show a **科研判断卡** in the overview.
-- Render component-level material coverage instead of only “部分/充分”.
-- Render Gap as author framing + actual bottleneck + Gap judgment.
-- Render Method Diff and module decomposition with intentional column widths.
-- Render assumptions with why-needed, failure mode, and stress test.
-- Render experiment-evidence chains before Claim–Evidence.
-- Render each Claim as a **single semantic callout/card** instead of a long multi-row table; this reduces awkward page splitting.
-- Hide backend ids (`cl-001`, `ev-001`) and display user labels such as `Claim 1`, `E1`.
-- Keep paper-internal evidence support separate from external verification.
-- Keep author limitations separate from PaperScope analysis limitations.
-- Render Open Questions as question → why it matters → how to validate.
-- Render a source-aware reading guide and structured 20-minute path.
-- Render Evidence Index entries with source location, evidence role, and supported claims.
-- Use neutral body text for criticism; reserve warm colors for warning borders/fills.
+The first page should prioritize:
 
-See `references/deep-reading-layout.md`.
+- one-sentence takeaway;
+- research judgment card;
+- core problem;
+- core method;
+- real paper-relative change;
+- strongest evidence;
+- biggest weakness/risk;
+- why it is worth reading;
+- most promising bounded follow-up direction;
+- reading recommendation;
+- compact material coverage.
+
+Research-value score tables are secondary and hidden by default in the standard style.
+
+### Layer 2 — deep reading
+
+Prefer concise structured components:
+
+- Gap judgment;
+- Method Diff;
+- compact module table;
+- essential formula only when reliable;
+- assumptions summarized in one table by default;
+- experiment interpretation chains;
+- compact Claim cards;
+- 2–4 prominent core weakness cards;
+- the most important open questions and research directions;
+- 20-minute return-to-source route.
+
+### Layer 3 — evidence appendix
+
+The main body should normally show compact evidence labels/locations, not repeated full source excerpts.
+
+Put source snippets, detailed evidence metadata, evidence roles, and backlinks in the Evidence Appendix.
+
+This keeps traceability without forcing the user to read the evidence layer before understanding the paper.
+
+---
+
+## Default detail policy
+
+The `ai-deep-reading` Style Pack uses:
+
+- `report_profile: standard`
+- `evidence_mode: index_only`
+- compact claims;
+- compact experiments;
+- summary assumptions;
+- compact material-coverage matrix;
+- top 3 core weaknesses;
+- top 3 open questions;
+- top 3 bounded research directions;
+- no separate TOC page by default;
+- evidence appendix enabled.
+
+A `complete` profile may expose full claim-audit fields, experiment protocol detail, reproduction risks, and more appendices.
+
+---
+
+## User-facing simplification rules
+
+Do not expose raw backend jargon as the primary report language:
+
+- `reported` → 作者明确说明
+- `inferred` → 基于论文分析
+- `E2_BODY_TEXT` → 已获取正文
+- `paper_only` → 仅基于本文
+- `cl-001` / `ev-003` → descriptive claim titles / compact E-labels
+- `null` → hide the field or state the human-readable boundary
+
+Do not turn every schema field into a visible paragraph.
+
+---
+
+## Deterministic DOCX rules
+
+- Real Word named styles are mandatory.
+- Latin/East Asian fonts are configured separately.
+- Font size, bold, color, spacing, margins, tables, headers/footers, and page numbers are deterministic.
+- Semantic callout titles are bold.
+- Label prefixes such as `结论：`, `为什么重要：`, `如何验证：`, and `边界：` are bolded selectively; explanatory text remains normal weight.
+- Callout fill/border color reflects semantic type.
+- Keep semantic callout rows together when practical.
+- Repeat table headers when useful.
+- Avoid awkward claim-card page breaks.
+- Evidence source text and AI interpretation remain visually distinct.
 
 ---
 
 ## Workflow
 
 ### 1. Normalize domain JSON
-
-Deep reading:
 
 ```bash
 python scripts/compile.py \
@@ -159,31 +222,9 @@ python scripts/validate_document.py \
   --style style-packs/ai-deep-reading.yaml
 ```
 
-Schema errors are blockers.
+### 3. Render
 
-### 3. Render deterministically
-
-DOCX:
-
-```bash
-python scripts/compile.py \
-  --input deep-reading-result.json \
-  --adapter deep-reading \
-  --style style-packs/ai-deep-reading.yaml \
-  --format docx \
-  --output report.docx
-```
-
-Markdown:
-
-```bash
-python scripts/compile.py \
-  --input deep-reading-result.json \
-  --adapter deep-reading \
-  --style style-packs/ai-deep-reading.yaml \
-  --format md \
-  --output report.md
-```
+DOCX or Markdown through `scripts/compile.py`.
 
 ### 4. Structural DOCX validation
 
@@ -191,62 +232,36 @@ python scripts/compile.py \
 python scripts/validate_docx_structure.py report.docx
 ```
 
-### 5. Render and visually inspect
+### 5. Visual QA
 
 ```bash
 python scripts/qa_docx.py report.docx --preview-dir preview
 ```
 
-Inspect every rendered page. Fix and repeat if there is clipping, excessive whitespace, awkward table splitting, orphan headings, poor column widths, missing glyphs, or header/footer defects.
-
-### 6. Deliver final artifacts only
-
-Do not deliver QA page images unless requested.
-
----
-
-## DOCX requirements
-
-- Real Word named styles for Normal, Title, Heading 1/2/3 and semantic Scholar-Format-Engine roles.
-- Latin + East Asian font mappings.
-- PAGE fields in footer when page numbers are enabled.
-- Repeat table headers where useful.
-- `cantSplit` for table rows and one-cell semantic callouts.
-- Optional `column_widths_pct` for intentional table proportions.
-- Evidence/claim/open-question cards should stay together when practical.
-- Evidence appendix entries may carry bookmarks for future internal navigation.
-- Source snippets and AI interpretation must remain visually distinct.
-- Do not expose raw backend ids/statuses by default.
-
----
-
-## Markdown requirements
-
-Markdown preserves semantic structure, not exact layout.
-
-Use headings, lists, tables, blockquotes/callouts, images, equations, and optional front matter. When blocks contain stable ids, render anchors so evidence appendices remain addressable.
+Inspect every rendered page. Fix clipping, crowding, awkward whitespace, orphan headings, broken tables, poor line wrapping, or excessive visual emphasis.
 
 ---
 
 ## Boundaries
 
 Scholar-Format-Engine does not:
-- decide whether scientific claims are correct;
-- perform literature search or novelty verification;
-- repair unsupported evidence;
-- invent figures/equations/references/metadata;
-- act as a PDF layout-restoration engine;
-- reverse-engineer arbitrary Word templates in the current release;
-- automatically reformat arbitrary legacy Word documents in v1.2.
 
+- decide whether a scientific claim is correct;
+- invent missing weaknesses, evidence, equations, or research directions;
+- perform novelty search;
+- repair unsupported analysis;
+- rewrite upstream scientific meaning to make the layout look complete.
 
-## Deep Reading v1.5 rendering contract
+If a structured field is missing, hide or flag the block; do not fabricate it.
 
-For AI deep-reading reports, the engine must render the analysis so a research user can scan the logic rather than inspect backend JSON.
+---
 
-- Prefer descriptive `claim_title` headings; raw `cl-###` IDs remain internal.
-- In section 05, render author limitations, PaperScope analysis-derived limitations, then prominent **core weakness** cards with: weakness → why it matters → potential impact → validation.
-- In section 06, render Open Questions, then bounded **research directions**, then guided reading / 20-minute path.
-- Research-direction cards must be clearly labeled as PaperScope-derived unless the upstream content says the author proposed them.
-- Never render placeholders such as “当前材料未说明” as completed analytical content.
-- Preserve evidence traceability: evidence snippets are source text only; analysis text must remain visually distinct.
+## Shipping gate
+
+For DOCX deliverables:
+
+1. validate structure;
+2. render to page images;
+3. inspect every page;
+4. iterate until clean;
+5. deliver only the final requested artifact.

@@ -532,6 +532,40 @@ def add_table(doc: Document, block: Dict[str, Any], style: Dict[str, Any]):
     return table
 
 
+
+SEMANTIC_BOLD_PREFIXES = {
+    "核心判断", "结论", "支持程度", "论文内部支持", "关键依据", "依据", "边界", "适用边界",
+    "不能进一步证明", "为什么", "为什么重要", "如何验证", "建议如何验证", "如何加强",
+    "缺陷是什么", "潜在影响", "若不成立", "如何压力测试", "建议压力测试",
+    "目标问题", "为什么值得继续", "优先验证", "边界说明", "实验目的", "结果", "真正支持",
+    "比较条件", "协议风险", "来源", "风险等级", "来源性质"
+}
+
+def add_semantic_lines(paragraph, text: str, cfg: Dict[str, Any]):
+    """Render label-prefixed lines with restrained bold emphasis.
+
+    Bold communicates importance; the role/callout color communicates semantic type.
+    """
+    lines = str(text or "").split("\n")
+    for li, line in enumerate(lines):
+        if li:
+            paragraph.add_run("\n")
+        matched = False
+        for sep in ("：", ":"):
+            if sep in line:
+                prefix, rest = line.split(sep, 1)
+                label = prefix.strip()
+                if label in SEMANTIC_BOLD_PREFIXES:
+                    r = paragraph.add_run(prefix + sep)
+                    set_run_font(r, cfg.get("font", {}), bold_override=True)
+                    r = paragraph.add_run(rest)
+                    set_run_font(r, cfg.get("font", {}), bold_override=False)
+                    matched = True
+                    break
+        if not matched:
+            r = paragraph.add_run(line)
+            set_run_font(r, cfg.get("font", {}))
+
 def add_callout(doc: Document, block: Dict[str, Any], style: Dict[str, Any]):
     role = block.get("role", "note")
     table = doc.add_table(rows=1, cols=1)
@@ -555,8 +589,7 @@ def add_callout(doc: Document, block: Dict[str, Any], style: Dict[str, Any]):
     if block.get("title"):
         r = p.add_run(str(block["title"]) + "\n")
         set_run_font(r, cfg.get("font", {}), bold_override=True)
-    r = p.add_run(str(block.get("text", "")))
-    set_run_font(r, cfg.get("font", {}))
+    add_semantic_lines(p, str(block.get("text", "")), cfg)
     meta = block.get("meta") or {}
     if meta:
         r = p.add_run("\n")

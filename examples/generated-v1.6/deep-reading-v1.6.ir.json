@@ -1,0 +1,490 @@
+{
+  "schema_version": "1.1",
+  "document_id": "deep-reading-paper-001",
+  "document_kind": "ai_deep_reading",
+  "language": "zh-CN",
+  "title": "AI 论文精读报告",
+  "subtitle": "Example Method Paper",
+  "metadata": {
+    "作者": "A. Author",
+    "年份": 2026,
+    "分析版本": "Uploaded PDF",
+    "材料覆盖": "充分",
+    "证据定位": "可定位至章节/图表",
+    "外部核验": "仅基于本文"
+  },
+  "blocks": [
+    {
+      "type": "heading",
+      "role": "heading1",
+      "level": 1,
+      "text": "01 论文速览"
+    },
+    {
+      "type": "callout",
+      "role": "key_takeaway",
+      "title": "3 分钟看懂",
+      "text": "The paper replaces global matching with descriptor-level matching, with bounded evidence for the tested setup."
+    },
+    {
+      "type": "table",
+      "role": "table",
+      "caption": "科研判断卡",
+      "headers": [
+        "你最关心什么",
+        "判断"
+      ],
+      "rows": [
+        [
+          "核心问题",
+          "Whether global image matching discards useful local evidence in few-shot classification."
+        ],
+        [
+          "核心方法",
+          "Descriptor-level query-to-support matching with aggregated class similarity."
+        ],
+        [
+          "真正变化",
+          "The paper-framed delta is replacing global matching with learnable local matching inside the few-shot classifier."
+        ],
+        [
+          "最强证据",
+          "The inspected method section directly describes descriptor-level matching."
+        ],
+        [
+          "最大缺陷 / 风险",
+          "Performance may depend on local descriptors being class-discriminative rather than noisy."
+        ],
+        [
+          "为什么值得读",
+          "The paper is useful because it isolates a clear representational change—global matching to local descriptor matching—that is easy to reason about and stress-test."
+        ],
+        [
+          "最值得继续研究",
+          "Test whether local matches should be reliability-weighted when background or weak descriptors can contribute misleading class evidence."
+        ]
+      ],
+      "column_widths_pct": [
+        22,
+        78
+      ]
+    },
+    {
+      "type": "table",
+      "role": "table",
+      "headers": [
+        "项目",
+        "判断"
+      ],
+      "rows": [
+        [
+          "论文内部证据",
+          "有一定支持"
+        ],
+        [
+          "阅读建议",
+          "建议重点阅读核心章节｜The method is concise; the Method section carries most of the value."
+        ]
+      ],
+      "column_widths_pct": [
+        20,
+        80
+      ]
+    },
+    {
+      "type": "heading",
+      "role": "heading2",
+      "level": 2,
+      "text": "材料覆盖"
+    },
+    {
+      "type": "table",
+      "role": "table",
+      "headers": [
+        "材料",
+        "状态"
+      ],
+      "rows": [
+        [
+          "正文",
+          "已获取"
+        ],
+        [
+          "章节结构",
+          "已获取"
+        ],
+        [
+          "表格",
+          "未获取"
+        ],
+        [
+          "图",
+          "未获取"
+        ],
+        [
+          "公式",
+          "未获取"
+        ],
+        [
+          "代码",
+          "未核验"
+        ],
+        [
+          "外部文献",
+          "未核验"
+        ]
+      ],
+      "column_widths_pct": [
+        48,
+        52
+      ]
+    },
+    {
+      "type": "heading",
+      "role": "heading1",
+      "level": 1,
+      "text": "02 研究问题与 Gap"
+    },
+    {
+      "type": "paragraph",
+      "role": "body",
+      "text": "作者界定的问题：The paper frames global matching as potentially inadequate for few-shot classification."
+    },
+    {
+      "type": "paragraph",
+      "role": "body",
+      "text": "论文声称的 Gap：The paper motivates local descriptor matching as an alternative to a single global representation."
+    },
+    {
+      "type": "paragraph",
+      "role": "analysis",
+      "text": "实际瓶颈：The operational bottleneck is whether a sparse support set is better represented as a pool of local evidence rather than one global vector."
+    },
+    {
+      "type": "callout",
+      "role": "judgment",
+      "title": "Gap 判断",
+      "text": "Gap 部分成立。The inspected material motivates the gap clearly, but the synthetic example does not include a full prior-work comparison.\n依据：E1、E2"
+    },
+    {
+      "type": "heading",
+      "role": "heading1",
+      "level": 1,
+      "text": "03 核心方法与真实创新"
+    },
+    {
+      "type": "paragraph",
+      "role": "lead",
+      "text": "方法概述：The method performs descriptor-level query-to-support matching."
+    },
+    {
+      "type": "table",
+      "role": "table",
+      "caption": "方法差异链（Method Diff）",
+      "headers": [
+        "环节",
+        "内容"
+      ],
+      "rows": [
+        [
+          "Previous",
+          "The paper contrasts the method with global matching.\n依据：E1"
+        ],
+        [
+          "Proposed",
+          "Replace global matching with local descriptor aggregation.\n依据：E1、E2"
+        ],
+        [
+          "Mechanism",
+          "Query descriptors are compared with support descriptors and similarities are aggregated.\n依据：E2"
+        ],
+        [
+          "Expected Effect",
+          "The design may preserve local discriminative information.\n依据：E2"
+        ]
+      ],
+      "column_widths_pct": [
+        22,
+        78
+      ]
+    },
+    {
+      "type": "heading",
+      "role": "heading2",
+      "level": 2,
+      "text": "核心模块"
+    },
+    {
+      "type": "table",
+      "role": "table",
+      "headers": [
+        "模块",
+        "作用",
+        "核心操作",
+        "为什么需要",
+        "依据"
+      ],
+      "rows": [
+        [
+          "Local Matching",
+          "Compute query-support local similarity",
+          "Compare descriptors and aggregate similarity",
+          "Avoid relying only on a single global vector",
+          "E2"
+        ]
+      ],
+      "column_widths_pct": [
+        15,
+        18,
+        27,
+        30,
+        10
+      ]
+    },
+    {
+      "type": "heading",
+      "role": "heading2",
+      "level": 2,
+      "text": "关键假设"
+    },
+    {
+      "type": "table",
+      "role": "table",
+      "headers": [
+        "假设",
+        "内容",
+        "风险",
+        "若不成立"
+      ],
+      "rows": [
+        [
+          "A1",
+          "Local descriptor matches are sufficiently discriminative.",
+          "高",
+          "Noisy descriptors could dominate class similarity."
+        ]
+      ],
+      "column_widths_pct": [
+        8,
+        46,
+        10,
+        36
+      ]
+    },
+    {
+      "type": "heading",
+      "role": "heading2",
+      "level": 2,
+      "text": "真实创新判断"
+    },
+    {
+      "type": "paragraph",
+      "role": "judgment",
+      "text": "相对本文 prior work 的变化：Relative to the paper-framed baseline, the change is global-to-local matching."
+    },
+    {
+      "type": "paragraph",
+      "role": "secondary",
+      "text": "领域首创性：未进行系统外部文献核验，暂不判断。"
+    },
+    {
+      "type": "heading",
+      "role": "heading1",
+      "level": 1,
+      "text": "04 实验与证据"
+    },
+    {
+      "type": "heading",
+      "role": "heading2",
+      "level": 2,
+      "text": "关键实验解释链"
+    },
+    {
+      "type": "callout",
+      "role": "claim",
+      "title": "实验 1",
+      "text": "实验目的：Test whether local matching improves few-shot classification relative to global matching.\n结果：The paper reports improved accuracy on the tested setup.\n真正支持：The paper provides within-study evidence that local matching can improve the tested setup.\n边界：The example does not establish universal superiority across datasets or domains.\n依据：E1"
+    },
+    {
+      "type": "heading",
+      "role": "heading2",
+      "level": 2,
+      "text": "核心 Claim–Evidence"
+    },
+    {
+      "type": "callout",
+      "role": "claim",
+      "title": "Claim 1｜Core method change",
+      "text": "结论：The method uses descriptor-level matching instead of only global matching.\n支持程度：支持充分\n关键依据：E1、E2\n边界：Supports method design, not universal performance superiority.",
+      "id": "claim-1"
+    },
+    {
+      "type": "callout",
+      "role": "note",
+      "title": "证据审计摘要",
+      "text": "整体论文内部证据：有一定支持"
+    },
+    {
+      "type": "heading",
+      "role": "heading1",
+      "level": 1,
+      "text": "05 批判性评价"
+    },
+    {
+      "type": "heading",
+      "role": "heading2",
+      "level": 2,
+      "text": "最需要警惕的核心缺陷"
+    },
+    {
+      "type": "callout",
+      "role": "risk",
+      "title": "核心缺陷 1｜Sensitivity to uninformative local descriptors",
+      "text": "缺陷是什么：The class score aggregates many local nearest-neighbor matches without evidence in this synthetic fixture that every descriptor is equally discriminative.\n为什么重要：If background or weak descriptors receive high-similarity neighbors, they can contribute misleading evidence to the final class score.\n潜在影响：The central claim that local matching improves classification may weaken under clutter, domain shift, or fine-grained ambiguity.\n如何验证：Inject descriptor noise or mask foreground/background regions while holding the backbone and support set fixed, then measure class-score and accuracy sensitivity.\n依据：E2",
+      "id": "weakness-1"
+    },
+    {
+      "type": "heading",
+      "role": "heading2",
+      "level": 2,
+      "text": "最脆弱的假设"
+    },
+    {
+      "type": "callout",
+      "role": "assumption",
+      "title": "脆弱假设 A1",
+      "text": "Local descriptor matches are sufficiently discriminative.\n若不成立：Noisy descriptors could dominate class similarity.\n如何压力测试：Inject descriptor noise or mask high-similarity local regions and measure class-score sensitivity.\n依据：E2"
+    },
+    {
+      "type": "heading",
+      "role": "heading2",
+      "level": 2,
+      "text": "审稿人最可能追问"
+    },
+    {
+      "type": "list",
+      "role": "body",
+      "ordered": true,
+      "items": [
+        "How sensitive is performance to descriptor noise?"
+      ]
+    },
+    {
+      "type": "heading",
+      "role": "heading1",
+      "level": 1,
+      "text": "06 开放问题与精读建议"
+    },
+    {
+      "type": "heading",
+      "role": "heading2",
+      "level": 2,
+      "text": "最值得继续追问的问题"
+    },
+    {
+      "type": "callout",
+      "role": "judgment",
+      "title": "Open Question 1",
+      "text": "问题：How sensitive is local matching to uninformative descriptors?\n为什么重要：The core similarity aggregates many local matches.\n建议如何验证：Stress-test descriptor masking, weighting, and noise injection while holding the backbone fixed.\n依据：E2"
+    },
+    {
+      "type": "heading",
+      "role": "heading2",
+      "level": 2,
+      "text": "后续研究方向（分析推导）"
+    },
+    {
+      "type": "callout",
+      "role": "research_direction",
+      "title": "方向 1｜Reliability-aware local matching",
+      "text": "目标问题：Determine whether all local descriptors should contribute equally to image-to-class similarity when some descriptors are background or weakly discriminative.\n为什么值得继续：The method aggregates many local matches and the core weakness concerns sensitivity to uninformative descriptors.\n优先验证：Measure descriptor reliability, class-score sensitivity, and robustness under controlled background/noise perturbations before designing a new mechanism.\n依据：E2",
+      "id": "research-direction-1"
+    },
+    {
+      "type": "heading",
+      "role": "heading2",
+      "level": 2,
+      "text": "20 分钟回原文路线"
+    },
+    {
+      "type": "table",
+      "role": "table",
+      "headers": [
+        "时间",
+        "原文位置",
+        "为什么看",
+        "看完应得到",
+        "依据"
+      ],
+      "rows": [
+        [
+          "8 min",
+          "Abstract",
+          "Establish the claimed problem and high-level method change.",
+          "Understand what the paper says is different.",
+          "E1"
+        ],
+        [
+          "12 min",
+          "Method",
+          "Inspect the descriptor-level matching mechanism.",
+          "Understand how query and support descriptors are compared.",
+          "E2"
+        ]
+      ],
+      "column_widths_pct": [
+        8,
+        20,
+        29,
+        33,
+        10
+      ]
+    },
+    {
+      "type": "heading",
+      "role": "heading1",
+      "level": 1,
+      "text": "材料边界与说明"
+    },
+    {
+      "type": "list",
+      "role": "note",
+      "ordered": false,
+      "items": [
+        "This example is synthetic and demonstrates schema structure only."
+      ]
+    },
+    {
+      "type": "heading",
+      "role": "heading1",
+      "level": 1,
+      "text": "附录：证据索引"
+    },
+    {
+      "type": "callout",
+      "role": "evidence",
+      "title": "E1 · 原文",
+      "text": "We propose a local matching method for few-shot classification.",
+      "meta": {
+        "位置": "Abstract",
+        "材料类型": "摘要",
+        "证据性质": "问题界定",
+        "支持": "Claim 1"
+      },
+      "id": "evidence-ev-001"
+    },
+    {
+      "type": "callout",
+      "role": "evidence",
+      "title": "E2 · 原文",
+      "text": "Each query descriptor is compared with support descriptors and the similarities are aggregated.",
+      "meta": {
+        "位置": "Method",
+        "材料类型": "正文",
+        "证据性质": "方法定义",
+        "支持": "Claim 1"
+      },
+      "id": "evidence-ev-002"
+    }
+  ]
+}

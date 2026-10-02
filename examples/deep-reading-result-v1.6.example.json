@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.5",
+  "schema_version": "1.6",
   "analysis_type": "deep_reading",
   "input": {
     "source_type": "parsed_pdf",
@@ -9,7 +9,8 @@
     "provided_materials": [
       "parsed body text",
       "section labels"
-    ]
+    ],
+    "user_research_context": null
   },
   "papers": [
     {
@@ -142,6 +143,46 @@
           "supported_claim_ids": [
             "cl-001"
           ]
+        },
+        {
+          "id": "ev-003",
+          "source_type": "paper",
+          "evidence_type": "body_text",
+          "source": "Analyzed paper",
+          "locator_mode": "structure_grounded",
+          "location": {
+            "section": "Experiments",
+            "page": null,
+            "figure": null,
+            "table": null,
+            "equation": null
+          },
+          "source_block_id": "b-020",
+          "snippet": "The local-matching model improves accuracy over the global-matching baseline on ExampleSet.",
+          "paraphrase": "The experiment section reports an accuracy improvement for local matching over the global baseline.",
+          "verification_status": "verified",
+          "evidence_role": "main_result",
+          "supported_claim_ids": []
+        },
+        {
+          "id": "ev-004",
+          "source_type": "paper",
+          "evidence_type": "body_text",
+          "source": "Analyzed paper",
+          "locator_mode": "structure_grounded",
+          "location": {
+            "section": "Discussion",
+            "page": null,
+            "figure": null,
+            "table": null,
+            "equation": null
+          },
+          "source_block_id": "b-030",
+          "snippet": "Performance may degrade when local descriptors are dominated by background patterns.",
+          "paraphrase": "The discussion notes a possible limitation when background descriptors dominate local matching.",
+          "verification_status": "verified",
+          "evidence_role": "limitation",
+          "supported_claim_ids": []
         }
       ],
       "paper_map": {
@@ -434,7 +475,8 @@
             "expected_takeaway": "Understand what the paper says is different.",
             "evidence_refs": [
               "ev-001"
-            ]
+            ],
+            "minutes": 8
           },
           {
             "order": 2,
@@ -443,7 +485,8 @@
             "expected_takeaway": "Understand how query and support descriptors are compared.",
             "evidence_refs": [
               "ev-002"
-            ]
+            ],
+            "minutes": 12
           }
         ]
       },
@@ -481,7 +524,9 @@
         "key_assumptions": [
           "Local descriptor matches are sufficiently discriminative."
         ],
-        "most_important_open_question": "How robust is local matching to uninformative or background descriptors?"
+        "most_important_open_question": "How robust is local matching to uninformative or background descriptors?",
+        "why_read": "The paper is useful because it isolates a clear representational change—global matching to local descriptor matching—that is easy to reason about and stress-test.",
+        "next_research_direction": "Test whether local matches should be reliability-weighted when background or weak descriptors can contribute misleading class evidence."
       },
       "research_gap": {
         "author_problem": {
@@ -549,6 +594,47 @@
             "wk-001"
           ],
           "boundary_note": "This is a PaperScope analysis-derived follow-up direction, not an author-stated proposal."
+        }
+      ],
+      "paper_lens": {
+        "primary": "method",
+        "secondary": null,
+        "rationale": "The paper is organized around a proposed method and its experimental evidence."
+      },
+      "evidence_inventory": {
+        "problem_framing_ids": [
+          "ev-001"
+        ],
+        "method_ids": [
+          "ev-001",
+          "ev-002"
+        ],
+        "main_result_ids": [
+          "ev-003"
+        ],
+        "ablation_ids": [],
+        "limitation_ids": [
+          "ev-004"
+        ],
+        "critical_artifacts": [
+          "Abstract",
+          "Method section",
+          "Experiments section",
+          "Discussion section"
+        ],
+        "missing_critical_evidence": [
+          "Main result table and visual artifacts were not independently inspected."
+        ]
+      },
+      "knowledge_takeaways": [
+        {
+          "takeaway_type": "method",
+          "takeaway": "A classification metric can be redesigned at the representation/matching level without requiring a much larger backbone.",
+          "why_transferable": "This suggests separating representation choice from classifier complexity when evaluating few-shot methods.",
+          "evidence_refs": [
+            "ev-001",
+            "ev-002"
+          ]
         }
       ]
     }

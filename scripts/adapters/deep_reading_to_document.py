@@ -202,8 +202,18 @@ def _presentation(style: Dict[str, Any] | None) -> Dict[str, Any]:
         "humanize_enums": True,
         "show_status_labels": False,
         "show_technical_metadata": False,
-        "evidence_mode": "inline_first",
+        "evidence_mode": "index_only",
         "evidence_index": True,
+        "report_profile": "standard",
+        "show_research_value": False,
+        "show_who_should_read": False,
+        "assumption_detail": "summary",
+        "claim_detail": "compact",
+        "experiment_detail": "compact",
+        "material_coverage_mode": "compact",
+        "max_core_weaknesses": 3,
+        "max_open_questions": 3,
+        "max_research_directions": 3,
     }
     defaults.update(style.get("presentation") or {})
     return defaults
@@ -445,11 +455,21 @@ def _claim_relation_text(item: Dict[str, Any], evidence: EvidencePresenter) -> s
 
 
 def _adapt_one_paper(paper: Dict[str, Any], style: Dict[str, Any] | None, index: int = 0, multi: bool = False) -> tuple[List[Dict[str, Any]], EvidencePresenter]:
+    """Render one deep-reading result using layered-reading defaults.
+
+    Layer 1 = 3-minute judgment, Layer 2 = deep analysis, Layer 3 = evidence appendix.
+    The adapter may reduce presentation detail, but it never invents scientific content.
+    """
     blocks: List[Dict[str, Any]] = []
     p_opts = _presentation(style)
     ev_map = {str(ev.get("id")): ev for ev in _as_list(paper.get("evidence_refs")) if isinstance(ev, dict) and ev.get("id")}
-    evidence = EvidencePresenter(ev_map=ev_map, mode=str(p_opts.get("evidence_mode", "inline_first")))
+    evidence = EvidencePresenter(ev_map=ev_map, mode=str(p_opts.get("evidence_mode", "index_only")))
     show_status = bool(p_opts.get("show_status_labels", False))
+    profile = str(p_opts.get("report_profile", "standard"))
+    claim_detail = str(p_opts.get("claim_detail", "compact"))
+    assumption_detail = str(p_opts.get("assumption_detail", "summary"))
+    experiment_detail = str(p_opts.get("experiment_detail", "compact"))
+    coverage_mode = str(p_opts.get("material_coverage_mode", "compact"))
 
     identity = paper.get("identity") or {}
     paper_title = identity.get("title") or f"论文 {index + 1}"
@@ -458,51 +478,69 @@ def _adapt_one_paper(paper: Dict[str, Any], style: Dict[str, Any] | None, index:
             blocks.append({"type": "page_break", "role": "body"})
         _heading(blocks, paper_title, 1)
 
-    # 01 Overview
+    # ------------------------------------------------------------------
+    # Layer 1 / 01 Overview: answer the user's most important questions fast.
+    # ------------------------------------------------------------------
     _heading(blocks, "01 论文速览", 1 if not multi else 2)
     jc = paper.get("judgment_card") or {}
     if jc.get("one_sentence_takeaway"):
-        blocks.append({"type":"callout","role":"analysis","title":"一句话看懂","text":str(jc.get("one_sentence_takeaway"))})
+        blocks.append({"type":"callout","role":"key_takeaway","title":"3 分钟看懂","text":str(jc.get("one_sentence_takeaway"))})
 
     sig_rows=[]
     for key,label in [
-        ("core_problem","核心问题"),("core_method","核心方法"),("paper_relative_innovation","真正变化"),
-        ("strongest_evidence","最强证据"),("biggest_risk","最大风险"),("most_important_open_question","最重要开放问题")
+        ("core_problem","核心问题"),
+        ("core_method","核心方法"),
+        ("paper_relative_innovation","真正变化"),
+        ("strongest_evidence","最强证据"),
+        ("biggest_risk","最大缺陷 / 风险"),
+        ("why_read","为什么值得读"),
+        ("next_research_direction","最值得继续研究"),
     ]:
-        if jc.get(key): sig_rows.append([label,str(jc.get(key))])
-    if jc.get("key_assumptions"):
-        sig_rows.append(["关键假设","；".join(str(x) for x in jc.get("key_assumptions") or [])])
+        if jc.get(key):
+            sig_rows.append([label,str(jc.get(key))])
     if sig_rows:
-        blocks.append({"type":"table","role":"table","caption":"科研判断卡","headers":["项目","判断"],"rows":sig_rows,"column_widths_pct":[22,78]})
+        blocks.append({"type":"table","role":"table","caption":"科研判断卡","headers":["你最关心什么","判断"],"rows":sig_rows,"column_widths_pct":[22,78]})
 
     overview_rows=[]
     strength=jc.get("paper_internal_evidence_strength") or jc.get("evidence_strength")
-    if strength: overview_rows.append(["论文内部证据支持",_support_value(strength)])
+    if strength:
+        overview_rows.append(["论文内部证据",_support_value(strength)])
     rp=jc.get("reading_priority")
     if isinstance(rp,dict):
-        overview_rows.append(["阅读优先级",READING_PRIORITY_LABELS.get(str(rp.get("level")),str(rp.get("level", "")))])
-        if rp.get("reason"): overview_rows.append(["理由",str(rp.get("reason"))])
-    elif rp: overview_rows.append(["阅读优先级",READING_PRIORITY_LABELS.get(str(rp),str(rp))])
-    if jc.get("who_should_read"): overview_rows.append(["适合读者","；".join(str(x) for x in jc.get("who_should_read") or [])])
+        level=READING_PRIORITY_LABELS.get(str(rp.get("level")),str(rp.get("level", "")))
+        reason=str(rp.get("reason") or "")
+        overview_rows.append(["阅读建议", level + ("｜"+reason if reason else "")])
+    elif rp:
+        overview_rows.append(["阅读建议",READING_PRIORITY_LABELS.get(str(rp),str(rp))])
+    if p_opts.get("show_who_should_read") and jc.get("who_should_read"):
+        overview_rows.append(["适合读者","；".join(str(x) for x in jc.get("who_should_read") or [])])
     if overview_rows:
-        blocks.append({"type":"table","role":"table","headers":["项目","判断"],"rows":overview_rows,"column_widths_pct":[24,76]})
-    rv_rows=_research_value_rows(jc.get("research_value"))
-    if rv_rows:
-        blocks.append({"type":"table","role":"table","caption":"研究价值","headers":["维度","等级","理由"],"rows":rv_rows,"column_widths_pct":[18,12,70]})
+        blocks.append({"type":"table","role":"table","headers":["项目","判断"],"rows":overview_rows,"column_widths_pct":[20,80]})
+
+    if p_opts.get("show_research_value"):
+        rv_rows=_research_value_rows(jc.get("research_value"))
+        if rv_rows:
+            blocks.append({"type":"table","role":"table","caption":"研究价值","headers":["维度","等级","理由"],"rows":rv_rows,"column_widths_pct":[18,12,70]})
 
     coverage_rows=_coverage_rows(paper)
     if coverage_rows:
         _heading(blocks,"材料覆盖",2 if not multi else 3)
-        blocks.append({"type":"table","role":"table","headers":["材料","状态","说明"],"rows":coverage_rows,"column_widths_pct":[18,18,64]})
+        if coverage_mode == "compact":
+            keep={"正文","章节结构","表格","图","公式","代码","外部文献"}
+            rows=[[a,b] for a,b,*_ in coverage_rows if a in keep]
+            blocks.append({"type":"table","role":"table","headers":["材料","状态"],"rows":rows,"column_widths_pct":[48,52]})
+        else:
+            blocks.append({"type":"table","role":"table","headers":["材料","状态","说明"],"rows":coverage_rows,"column_widths_pct":[18,18,64]})
 
-    # 02 Research problem and Gap
+    # ------------------------------------------------------------------
+    # Layer 2 / 02 Research question and Gap
+    # ------------------------------------------------------------------
     _heading(blocks, "02 研究问题与 Gap", 1 if not multi else 2)
-    _add_statement(blocks,paper.get("research_question"),evidence,label="研究问题",show_status=show_status)
     gap=paper.get("research_gap") or {}
     if gap:
-        _add_statement(blocks,gap.get("author_problem"),evidence,label="作者界定的问题",show_status=show_status)
+        _add_statement(blocks,gap.get("author_problem") or paper.get("research_question"),evidence,label="作者界定的问题",show_status=show_status)
         _add_statement(blocks,gap.get("author_claimed_gap"),evidence,label="论文声称的 Gap",show_status=show_status)
-        _add_statement(blocks,gap.get("paperscope_bottleneck"),evidence,role="analysis",label="PaperScope 判断的实际瓶颈",show_status=show_status)
+        _add_statement(blocks,gap.get("paperscope_bottleneck"),evidence,role="analysis",label="实际瓶颈",show_status=show_status)
         ga=gap.get("gap_assessment") or {}
         if ga:
             status_map={"established":"Gap 基本成立","partially_established":"Gap 部分成立","narrative_overreach":"存在一定叙事放大","unclear":"当前材料不足以判断"}
@@ -510,17 +548,20 @@ def _adapt_one_paper(paper: Dict[str, Any], style: Dict[str, Any] | None, index:
             text=status_map.get(str(ga.get("status")),str(ga.get("status") or ""))
             if ga.get("rationale"): text += "。"+str(ga.get("rationale"))
             if refs: text += "\n依据："+evidence.compact_label(refs)
-            blocks.append({"type":"callout","role":"analysis","title":"Gap 判断","text":text})
-            blocks.extend(evidence.callouts(refs))
+            blocks.append({"type":"callout","role":"judgment","title":"Gap 判断","text":text})
+    else:
+        _add_statement(blocks,paper.get("research_question"),evidence,label="研究问题",show_status=show_status)
 
+    # ------------------------------------------------------------------
     # 03 Method and innovation
+    # ------------------------------------------------------------------
     _heading(blocks, "03 核心方法与真实创新", 1 if not multi else 2)
     method=paper.get("method_summary") or {}
     _add_statement(blocks,method.get("summary"),evidence,role="lead",label="方法概述",show_status=show_status)
     diff=_method_diff_table(method,evidence,show_status)
     if diff:
         diff["caption"]="方法差异链（Method Diff）"
-        diff["column_widths_pct"]=[23,77]
+        diff["column_widths_pct"]=[22,78]
         blocks.append(diff)
 
     modules=method.get("main_modules") or method.get("modules") or []
@@ -531,150 +572,129 @@ def _adapt_one_paper(paper: Dict[str, Any], style: Dict[str, Any] | None, index:
             if not isinstance(m,dict): continue
             refs=[str(x) for x in m.get("evidence_refs") or []]
             rows.append([
-                str(m.get("module_name") or ""),str(m.get("purpose") or ""),str(m.get("input") or ""),
-                str(m.get("operation") or ""),str(m.get("output") or ""),str(m.get("why_needed") or ""),evidence.compact_label(refs)
+                str(m.get("module_name") or ""),str(m.get("purpose") or ""),
+                str(m.get("operation") or ""),str(m.get("why_needed") or ""),evidence.compact_label(refs)
             ])
         if rows:
-            blocks.append({"type":"table","role":"table","headers":["模块","作用","输入","操作","输出","为什么需要","依据"],"rows":rows,"column_widths_pct":[12,14,12,22,12,20,8]})
+            blocks.append({"type":"table","role":"table","headers":["模块","作用","核心操作","为什么需要","依据"],"rows":rows,"column_widths_pct":[15,18,27,30,10]})
 
     equations=method.get("key_equations") or []
     if equations:
         _heading(blocks,"关键公式 / 定理",2 if not multi else 3)
-        for eq in equations:
+        for eq in equations[:3 if profile != "complete" else len(equations)]:
             if not isinstance(eq,dict): continue
             refs=[str(x) for x in eq.get("evidence_refs") or []]
-            lines=["作用："+str(eq.get("purpose") or ""),"直觉："+str(eq.get("intuition") or "")]
+            lines=[]
+            if eq.get("purpose"): lines.append("作用："+str(eq.get("purpose")))
+            if eq.get("intuition"): lines.append("直觉："+str(eq.get("intuition")))
             syms=eq.get("symbols") or []
-            if syms: lines.append("符号："+"；".join(f"{x.get('symbol')}={x.get('meaning')}" for x in syms if isinstance(x,dict)))
+            if syms and profile == "complete":
+                lines.append("符号："+"；".join(f"{x.get('symbol')}={x.get('meaning')}" for x in syms if isinstance(x,dict)))
             if refs: lines.append("依据："+evidence.compact_label(refs))
-            blocks.append({"type":"callout","role":"analysis","title":str(eq.get("label") or "关键公式"),"text":"\n".join(lines)})
-            blocks.extend(evidence.callouts(refs))
+            blocks.append({"type":"callout","role":"judgment","title":str(eq.get("label") or "关键公式"),"text":"\n".join(lines)})
 
     assumptions=method.get("assumptions") or []
     if assumptions:
         _heading(blocks,"关键假设",2 if not multi else 3)
-        for i,a in enumerate(assumptions,1):
-            if not isinstance(a,dict): continue
-            aid=a.get("assumption_id") or f"A{i}"
-            display_aid=f"A{i}"
-            risk=a.get("risk_level") or ""
-            refs=[str(x) for x in a.get("evidence_refs") or []]
-            lines=[str(a.get("assumption_text") or "")]
-            prov=a.get("provenance")
-            if prov: lines.append("来源性质："+("作者明确假设" if prov=="explicit" else "隐含假设" if prov=="inferred" else str(prov)))
-            if risk: lines.append("风险等级："+LEVEL_LABELS.get(str(risk),str(risk)))
-            if a.get("why_needed"): lines.append("为什么需要："+str(a.get("why_needed")))
-            if a.get("failure_mode"): lines.append("若不成立："+str(a.get("failure_mode")))
-            if a.get("stress_test"): lines.append("如何压力测试："+str(a.get("stress_test")))
-            elif a.get("testability"): lines.append("如何检验："+str(a.get("testability")))
-            if refs: lines.append("依据："+evidence.compact_label(refs))
-            blocks.append({"type":"callout","role":"warning" if risk=="high" else "analysis","title":f"假设 {display_aid}","text":"\n".join(lines)})
-            blocks.extend(evidence.callouts(refs))
+        if assumption_detail == "summary":
+            rows=[]
+            for i,a in enumerate(assumptions,1):
+                if not isinstance(a,dict): continue
+                rows.append([f"A{i}",str(a.get("assumption_text") or ""),LEVEL_LABELS.get(str(a.get("risk_level")),str(a.get("risk_level") or "")),str(a.get("failure_mode") or "")])
+            blocks.append({"type":"table","role":"table","headers":["假设","内容","风险","若不成立"],"rows":rows,"column_widths_pct":[8,46,10,36]})
+        else:
+            for i,a in enumerate(assumptions,1):
+                if not isinstance(a,dict): continue
+                refs=[str(x) for x in a.get("evidence_refs") or []]
+                lines=[str(a.get("assumption_text") or "")]
+                if a.get("why_needed"): lines.append("为什么需要："+str(a.get("why_needed")))
+                if a.get("failure_mode"): lines.append("若不成立："+str(a.get("failure_mode")))
+                if a.get("stress_test"): lines.append("如何压力测试："+str(a.get("stress_test")))
+                if refs: lines.append("依据："+evidence.compact_label(refs))
+                role="risk" if a.get("risk_level")=="high" else "assumption"
+                blocks.append({"type":"callout","role":role,"title":f"假设 A{i}","text":"\n".join(lines)})
 
     novelty=paper.get("novelty_verification") or {}
     if novelty:
-        _heading(blocks,"创新判断",2 if not multi else 3)
+        _heading(blocks,"真实创新判断",2 if not multi else 3)
         delta=novelty.get("paper_relative_delta")
         if delta:
-            if isinstance(delta,dict): _add_statement(blocks,delta,evidence,role="analysis",label="相对本文 prior work 的变化",show_status=show_status)
-            else: blocks.append({"type":"paragraph","role":"analysis","text":"相对本文 prior work 的变化："+_text(delta)})
-        field=novelty.get("field_novelty")
-        status=novelty.get("status")
-        if field:
-            if isinstance(field,dict): _add_statement(blocks,field,evidence,role="analysis",label="领域首创性",show_status=show_status)
-            else: blocks.append({"type":"paragraph","role":"analysis","text":"领域首创性："+_text(field)})
+            _add_statement(blocks,delta,evidence,role="judgment",label="相对本文 prior work 的变化",show_status=show_status)
+        if novelty.get("field_novelty"):
+            _add_statement(blocks,novelty.get("field_novelty"),evidence,role="judgment",label="领域首创性",show_status=show_status)
         else:
-            blocks.append({"type":"callout","role":"note","title":"领域首创性","text":"未进行系统外部文献核验，暂不判断是否属于领域首次提出。"})
-        if status: blocks.append({"type":"paragraph","role":"note","text":"核验状态："+NOVELTY_STATUS_LABELS.get(str(status),str(status))})
+            blocks.append({"type":"paragraph","role":"secondary","text":"领域首创性：未进行系统外部文献核验，暂不判断。"})
 
-    contributions=paper.get("contributions") or []
-    if contributions:
-        _heading(blocks,"主要贡献",2 if not multi else 3)
-        for i,c in enumerate(contributions,1): _add_statement(blocks,c,evidence,label=f"贡献 {i}",show_status=show_status)
-
+    # ------------------------------------------------------------------
     # 04 Experiments and evidence
+    # ------------------------------------------------------------------
     _heading(blocks,"04 实验与证据",1 if not multi else 2)
     experiments=paper.get("experiments") or []
     if experiments:
-        _heading(blocks,"实验解释链",2 if not multi else 3)
-        for i,ex in enumerate(experiments,1):
+        _heading(blocks,"关键实验解释链",2 if not multi else 3)
+        limit = 4 if profile != "complete" else len(experiments)
+        for i,ex in enumerate(experiments[:limit],1):
             if not isinstance(ex,dict): continue
             refs=[str(x) for x in ex.get("evidence_refs") or []]
-            lines=[
-                "实验目的："+str(ex.get("purpose") or ""),
-                "设计："+str(ex.get("design") or ""),
-                "比较条件："+str(ex.get("comparison_conditions") or ""),
-                "结果："+str(ex.get("result") or ""),
-                "真正支持："+str(ex.get("supported_conclusion") or "")
-            ]
-            if ex.get("unsupported_stronger_conclusion"): lines.append("不能进一步证明："+str(ex.get("unsupported_stronger_conclusion")))
-            if ex.get("protocol_risks"): lines.append("协议风险："+"；".join(str(x) for x in ex.get("protocol_risks") or []))
+            if experiment_detail == "compact":
+                lines=[
+                    "实验目的："+str(ex.get("purpose") or ""),
+                    "结果："+str(ex.get("result") or ""),
+                    "真正支持："+str(ex.get("supported_conclusion") or "")
+                ]
+                if ex.get("unsupported_stronger_conclusion"): lines.append("边界："+str(ex.get("unsupported_stronger_conclusion")))
+            else:
+                lines=[
+                    "实验目的："+str(ex.get("purpose") or ""),
+                    "设计："+str(ex.get("design") or ""),
+                    "比较条件："+str(ex.get("comparison_conditions") or ""),
+                    "结果："+str(ex.get("result") or ""),
+                    "真正支持："+str(ex.get("supported_conclusion") or "")
+                ]
+                if ex.get("unsupported_stronger_conclusion"): lines.append("不能进一步证明："+str(ex.get("unsupported_stronger_conclusion")))
+                if ex.get("protocol_risks"): lines.append("协议风险："+"；".join(str(x) for x in ex.get("protocol_risks") or []))
             if refs: lines.append("依据："+evidence.compact_label(refs))
-            blocks.append({"type":"callout","role":"analysis","title":f"实验 {i}","text":"\n".join(lines)})
-            blocks.extend(evidence.callouts(refs))
-
-    findings=paper.get("evaluation_or_findings") or []
-    if findings:
-        _heading(blocks,"主要结果",2 if not multi else 3)
-        for i,f in enumerate(findings,1): _add_statement(blocks,f,evidence,label=f"结果 {i}",show_status=show_status)
+            blocks.append({"type":"callout","role":"claim","title":f"实验 {i}","text":"\n".join(lines)})
 
     claims=paper.get("claim_evidence") or []
     if claims:
-        _heading(blocks,"Claim–Evidence",2 if not multi else 3)
-        for i,item in enumerate(claims,1):
-            if not isinstance(item,dict): continue
+        _heading(blocks,"核心 Claim–Evidence",2 if not multi else 3)
+        core=[c for c in claims if isinstance(c,dict) and c.get("importance") == "core"]
+        selected=(core or claims)[:4 if profile != "complete" else len(claims)]
+        for i,item in enumerate(selected,1):
             claim=item.get("claim") or {}
             claim_text=_statement_text(claim) if isinstance(claim,dict) else _text(claim)
             refs=_claim_refs(item)
-            support=item.get("paper_internal_support") or item.get("support_strength")
-            ext=item.get("external_verification_status")
-            lines=[
-                "核心判断："+claim_text,
-                "论文内部支持："+_support_value(support),
-                "为什么："+_text(item.get("support_reason")),
-            ]
-            reltext=_claim_relation_text(item,evidence)
-            if reltext: lines.append("证据关系："+reltext)
-            if item.get("scope_boundary"): lines.append("适用边界："+_text(item.get("scope_boundary")))
-            if item.get("unsupported_stronger_claim"): lines.append("不能进一步证明："+_text(item.get("unsupported_stronger_claim")))
-            if item.get("what_would_strengthen_it"): lines.append("如何进一步加强："+_text(item.get("what_would_strengthen_it")))
-            if ext: lines.append("外部核验："+EXTERNAL_VERIFICATION_LABELS.get(str(ext),str(ext)))
-            if refs: lines.append("依据："+evidence.compact_label(refs))
-            claim_title=str(item.get("claim_title") or "").strip()
-            visible_title=f"Claim {i}｜{claim_title}" if claim_title else f"Claim {i}"
-            blocks.append({"type":"callout","role":"analysis","title":visible_title,"text":"\n".join(lines),"id":f"claim-{i}"})
-            blocks.extend(evidence.callouts(refs))
+            title=str(item.get("claim_title") or "").strip()
+            visible_title=f"Claim {i}｜{title}" if title else f"Claim {i}"
+            lines=["结论："+claim_text,"支持程度："+_support_value(item.get("paper_internal_support"))]
+            if refs: lines.append("关键依据："+evidence.compact_label(refs))
+            if item.get("scope_boundary"): lines.append("边界："+_text(item.get("scope_boundary")))
+            if claim_detail == "full":
+                if item.get("support_reason"): lines.append("为什么："+_text(item.get("support_reason")))
+                if item.get("unsupported_stronger_claim"): lines.append("不能进一步证明："+_text(item.get("unsupported_stronger_claim")))
+                if item.get("what_would_strengthen_it"): lines.append("如何加强："+_text(item.get("what_would_strengthen_it")))
+            blocks.append({"type":"callout","role":"claim","title":visible_title,"text":"\n".join(lines),"id":f"claim-{i}"})
 
     audit=paper.get("evidence_audit") or {}
     if audit:
-        overall=audit.get("paper_internal_support") or audit.get("overall_support")
-        if overall: blocks.append({"type":"callout","role":"analysis","title":"整体论文内部证据支持","text":_support_value(overall)})
+        overall=audit.get("paper_internal_support")
         missing=audit.get("missing_evidence") or []
-        if missing:
-            _heading(blocks,"仍缺少的验证",3)
-            blocks.append({"type":"list","role":"note","ordered":False,"items":[str(x) for x in missing]})
+        lines=[]
+        if overall: lines.append("整体论文内部证据："+_support_value(overall))
+        if missing and profile == "complete": lines.append("仍缺少的验证："+"；".join(str(x) for x in missing))
+        if lines: blocks.append({"type":"callout","role":"note","title":"证据审计摘要","text":"\n".join(lines)})
 
-    # 05 Critical review
+    # ------------------------------------------------------------------
+    # 05 Critique: core weaknesses first for user clarity.
+    # ------------------------------------------------------------------
     _heading(blocks,"05 批判性评价",1 if not multi else 2)
-    author_limits=paper.get("author_acknowledged_limitations") or []
-    if author_limits:
-        _heading(blocks,"作者明确指出的局限 / 约束",2 if not multi else 3)
-        for item in author_limits: _add_statement(blocks,item,evidence,role="body",show_status=show_status)
-    unknowns=paper.get("unresolved_unknowns") or []
-    if unknowns:
-        _heading(blocks,"当前材料仍无法确认",2 if not multi else 3)
-        blocks.append({"type":"list","role":"note","ordered":False,"items":[str(x) for x in unknowns]})
     crit=paper.get("critical_review") or {}
-    analysis_limits=crit.get("analysis_limitations") or []
-    if analysis_limits:
-        _heading(blocks,"PaperScope 分析出的局限",2 if not multi else 3)
-        for item in analysis_limits: _add_statement(blocks,item,evidence,role="body",show_status=show_status)
     core_weaknesses=crit.get("core_weaknesses") or []
     if core_weaknesses:
-        _heading(blocks,"PaperScope 判断的核心缺陷",2 if not multi else 3)
-        claim_title_map={str(c.get("claim_id")):str(c.get("claim_title") or "") for c in claims if isinstance(c,dict) and c.get("claim_id")}
-        assumption_index={str(a.get("assumption_id")):idx+1 for idx,a in enumerate(assumptions) if isinstance(a,dict) and a.get("assumption_id")}
-        for i,w in enumerate(core_weaknesses,1):
+        _heading(blocks,"最需要警惕的核心缺陷",2 if not multi else 3)
+        max_w=int(p_opts.get("max_core_weaknesses",3))
+        for i,w in enumerate(core_weaknesses[:max_w],1):
             if not isinstance(w,dict): continue
             refs=[str(x) for x in w.get("evidence_refs") or []]
             lines=[]
@@ -682,119 +702,99 @@ def _adapt_one_paper(paper: Dict[str, Any], style: Dict[str, Any] | None, index:
             if w.get("why_it_matters"): lines.append("为什么重要："+str(w.get("why_it_matters")))
             if w.get("potential_impact"): lines.append("潜在影响："+str(w.get("potential_impact")))
             if w.get("suggested_validation"): lines.append("如何验证："+str(w.get("suggested_validation")))
-            related_claims=[]
-            for cid in w.get("related_claim_ids") or []:
-                ct=claim_title_map.get(str(cid))
-                related_claims.append(ct or str(cid))
-            if related_claims: lines.append("关联主张："+"；".join(related_claims))
-            related_ass=[]
-            for aid in w.get("related_assumption_ids") or []:
-                idx=assumption_index.get(str(aid))
-                related_ass.append(f"A{idx}" if idx else str(aid))
-            if related_ass: lines.append("关联假设："+"、".join(related_ass))
             if refs: lines.append("依据："+evidence.compact_label(refs))
-            title=str(w.get("title") or "核心缺陷")
-            blocks.append({"type":"callout","role":"limitation","title":f"核心缺陷 {i}｜{title}","text":"\n".join(lines),"id":f"weakness-{i}"})
-            blocks.extend(evidence.callouts(refs))
+            blocks.append({"type":"callout","role":"risk","title":f"核心缺陷 {i}｜{str(w.get('title') or '')}","text":"\n".join(lines),"id":f"weakness-{i}"})
+
+    author_limits=paper.get("author_acknowledged_limitations") or []
+    if author_limits:
+        _heading(blocks,"作者明确指出的局限 / 约束",2 if not multi else 3)
+        for item in author_limits[:4 if profile != "complete" else len(author_limits)]:
+            _add_statement(blocks,item,evidence,role="body",show_status=show_status)
 
     fragile=crit.get("fragile_assumptions") or []
     if fragile:
-        _heading(blocks,"脆弱假设",2 if not multi else 3)
+        _heading(blocks,"最脆弱的假设",2 if not multi else 3)
         assumption_map={a.get("assumption_id"):a for a in assumptions if isinstance(a,dict)}
-        for i,item in enumerate(fragile,1):
+        for i,item in enumerate(fragile[:3],1):
             if not isinstance(item,dict): continue
             src=assumption_map.get(item.get("assumption_id"),{})
             refs=[str(x) for x in item.get("evidence_refs") or []]
             lines=[]
             if src.get("assumption_text"): lines.append(str(src.get("assumption_text")))
             if item.get("failure_mode"): lines.append("若不成立："+str(item.get("failure_mode")))
-            if src.get("stress_test"): lines.append("建议压力测试："+str(src.get("stress_test")))
+            if src.get("stress_test"): lines.append("如何压力测试："+str(src.get("stress_test")))
             if refs: lines.append("依据："+evidence.compact_label(refs))
-            blocks.append({"type":"callout","role":"warning","title":f"脆弱假设 A{i}","text":"\n".join(lines)})
-            blocks.extend(evidence.callouts(refs))
+            blocks.append({"type":"callout","role":"assumption","title":f"脆弱假设 A{i}","text":"\n".join(lines)})
+
     questions=crit.get("reviewer_questions") or []
     if questions:
-        _heading(blocks,"审稿人可能关注的问题（Reviewer Questions）",2 if not multi else 3)
+        _heading(blocks,"审稿人最可能追问",2 if not multi else 3)
         blocks.append({"type":"list","role":"body","ordered":True,"items":[str(x) for x in questions[:3]]})
-    for key,label in [("reproducibility_risks","复现风险"),("evaluation_risks","评估风险")]:
-        vals=crit.get(key) or []
-        if vals:
-            _heading(blocks,label,3)
-            blocks.append({"type":"list","role":"body","ordered":False,"items":[str(x) for x in vals]})
-    applicability=crit.get("applicability_boundary") or []
-    if applicability:
-        _heading(blocks,"适用边界",3)
-        for item in applicability: _add_statement(blocks,item,evidence,role="analysis",show_status=show_status)
-    contradictions=paper.get("contradictions") or []
-    if contradictions:
-        _heading(blocks,"材料中的不一致",2 if not multi else 3)
-        for item in contradictions:
-            refs=[str(x) for x in item.get("evidence_refs") or []]
-            lines=[str(item.get("description") or "发现材料不一致")]
-            if item.get("impact"): lines.append("影响："+str(item.get("impact")))
-            if item.get("resolution_needed"): lines.append("如何解决："+str(item.get("resolution_needed")))
-            if refs: lines.append("涉及证据："+evidence.compact_label(refs))
-            blocks.append({"type":"callout","role":"warning","title":"材料不一致","text":"\n".join(lines)})
-            blocks.extend(evidence.callouts(refs))
 
-    # 06 Open questions and guided reading
+    if profile == "complete":
+        for key,label in [("reproducibility_risks","复现风险"),("evaluation_risks","评估风险")]:
+            vals=crit.get(key) or []
+            if vals:
+                _heading(blocks,label,3)
+                blocks.append({"type":"list","role":"body","ordered":False,"items":[str(x) for x in vals]})
+
+    # ------------------------------------------------------------------
+    # 06 Transfer: open questions, bounded directions, reading route.
+    # ------------------------------------------------------------------
     _heading(blocks,"06 开放问题与精读建议",1 if not multi else 2)
     oqs=paper.get("open_questions") or []
     if oqs:
-        _heading(blocks,"开放问题",2 if not multi else 3)
-        for i,q in enumerate(oqs,1):
+        _heading(blocks,"最值得继续追问的问题",2 if not multi else 3)
+        max_q=int(p_opts.get("max_open_questions",3))
+        for i,q in enumerate(oqs[:max_q],1):
             if not isinstance(q,dict): continue
             refs=[str(x) for x in q.get("evidence_refs") or []]
             lines=["问题："+str(q.get("question") or "")]
-            if q.get("origin"): lines.append("来源："+ORIGIN_LABELS.get(str(q.get("origin")),str(q.get("origin"))))
             if q.get("why_it_matters"): lines.append("为什么重要："+str(q.get("why_it_matters")))
             if q.get("suggested_validation"): lines.append("建议如何验证："+str(q.get("suggested_validation")))
             if refs: lines.append("依据："+evidence.compact_label(refs))
-            blocks.append({"type":"callout","role":"analysis","title":f"Open Question {i}","text":"\n".join(lines)})
-            blocks.extend(evidence.callouts(refs))
+            blocks.append({"type":"callout","role":"judgment","title":f"Open Question {i}","text":"\n".join(lines)})
 
     directions=paper.get("research_directions") or []
-    if directions:
-        _heading(blocks,"后续研究方向（PaperScope 分析）",2 if not multi else 3)
-        for i,rd in enumerate(directions,1):
+    if directions and p_opts.get("show_research_directions",True):
+        _heading(blocks,"后续研究方向（分析推导）",2 if not multi else 3)
+        max_d=int(p_opts.get("max_research_directions",3))
+        for i,rd in enumerate(directions[:max_d],1):
             if not isinstance(rd,dict): continue
             refs=[str(x) for x in rd.get("evidence_refs") or []]
             lines=[]
             if rd.get("target_problem"): lines.append("目标问题："+str(rd.get("target_problem")))
             if rd.get("rationale"): lines.append("为什么值得继续："+str(rd.get("rationale")))
             if rd.get("validation_focus"): lines.append("优先验证："+str(rd.get("validation_focus")))
-            if rd.get("boundary_note"): lines.append("边界说明："+str(rd.get("boundary_note")))
             if refs: lines.append("依据："+evidence.compact_label(refs))
             title=str(rd.get("title") or f"研究方向 {i}")
             blocks.append({"type":"callout","role":"research_direction","title":f"方向 {i}｜{title}","text":"\n".join(lines),"id":f"research-direction-{i}"})
-            blocks.extend(evidence.callouts(refs))
 
     guide=paper.get("reading_guide") or {}
-    if guide.get("items") or guide.get("twenty_minute_path"):
+    path=guide.get("twenty_minute_path") or []
+    if path:
+        _heading(blocks,"20 分钟回原文路线",2 if not multi else 3)
+        rows=[]
+        for step in path:
+            if not isinstance(step,dict): continue
+            refs=[str(x) for x in step.get("evidence_refs") or []]
+            rows.append([
+                f"{int(step.get('minutes') or 0)} min" if step.get('minutes') else "",
+                str(step.get("target_label") or ""),
+                str(step.get("why_read") or ""),
+                str(step.get("expected_takeaway") or ""),
+                evidence.compact_label(refs),
+            ])
+        if rows:
+            blocks.append({"type":"table","role":"table","headers":["时间","原文位置","为什么看","看完应得到","依据"],"rows":rows,"column_widths_pct":[8,20,29,33,10]})
+    elif guide.get("items"):
         _heading(blocks,"精读路线",2 if not multi else 3)
         rows=[]
         pri={"must_read":"必读","recommended":"推荐","skim":"略读"}
         for item in guide.get("items") or []:
             refs=[str(x) for x in item.get("evidence_refs") or []]
             rows.append([pri.get(str(item.get("priority")),str(item.get("priority") or "")),str(item.get("target_label") or ""),str(item.get("reason") or ""),evidence.compact_label(refs)])
-        if rows:
-            blocks.append({"type":"table","role":"table","headers":["优先级","原文位置","为什么值得看","依据"],"rows":rows,"column_widths_pct":[13,25,50,12]})
-        path=guide.get("twenty_minute_path") or []
-        if path:
-            _heading(blocks,"20 分钟阅读路线",3)
-            lines=[]
-            for step in path:
-                if isinstance(step,dict):
-                    label=str(step.get("target_label") or "")
-                    why=str(step.get("why_read") or "")
-                    take=str(step.get("expected_takeaway") or "")
-                    text=label
-                    if why: text += "｜为什么看："+why
-                    if take: text += "｜看完应得到："+take
-                    lines.append(text)
-                else:
-                    lines.append(str(step))
-            blocks.append({"type":"list","role":"analysis","ordered":True,"items":lines})
+        blocks.append({"type":"table","role":"table","headers":["优先级","原文位置","为什么值得看","依据"],"rows":rows,"column_widths_pct":[13,25,50,12]})
 
     return blocks,evidence
 

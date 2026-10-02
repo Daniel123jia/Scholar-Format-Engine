@@ -48,10 +48,21 @@ Formatting QA must never silently rewrite scientific content.
 If source and output differ in substantive wording or numbers, the delivery fails.
 
 
-## v1.3 deep-reading QA
+## v1.4 deep-reading QA
 
 - No raw `cl-###`, `wk-###`, `rd-###`, `reported`, `paper_only`, or `null` should appear as primary user-facing labels.
 - Core weakness cards must contain why-it-matters, potential impact, and validation.
 - Research direction cards must contain target problem, rationale, validation focus, and a clear analysis-derived boundary note.
 - Claim cards should use descriptive titles.
 - Avoid breaking a short core-weakness or research-direction card across pages.
+
+
+## v1.4 layered-report QA
+
+- Standard deep-reading report should prioritize the 3-minute judgment on page 1.
+- For typical method-paper fixtures, aim for 4–6 main pages before/around the evidence appendix; flag obvious bloat rather than shrinking fonts.
+- Full source snippets should not interrupt the standard main narrative; use the evidence appendix.
+- Core weakness, claim, assumption, and evidence semantic roles must remain visually distinguishable in grayscale.
+- Do not use more than the restrained primary/evidence/risk color grammar in the default academic pack.
+- Callout label prefixes should be bold without bolding entire explanatory paragraphs.
+- Avoid a separate TOC page in the standard short-report profile.

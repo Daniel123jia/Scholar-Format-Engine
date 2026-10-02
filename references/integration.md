@@ -14,7 +14,7 @@ ai-deep-reading.yaml
 DOCX / Markdown
 ```
 
-The adapter should preserve:
+The v1.6 adapter should preserve:
 
 - author-reported vs model-inferred status;
 - evidence support strength;
@@ -48,3 +48,8 @@ This makes the final Word document visually scannable while keeping the wording 
 ## Custom institutional styles
 
 Create a new Style Pack rather than modifying renderer code. Treat the renderer as infrastructure and the Style Pack as policy.
+
+
+### Deep-reading presentation
+
+The standard deep-reading pack uses a layered report: 3-minute judgment, six-stage deep reading, and an evidence appendix. Full source snippets belong in the appendix by default; the main narrative uses compact evidence labels and locations.

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:scholar-format-engine:style-pack:1.2",
-  "title": "Scholar-Format-Engine Style Pack",
+  "$id": "urn:scholar-format-engine:style-pack:1.4",
+  "title": "Scholar-Format-Engine Style Pack v1.4",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -258,6 +258,87 @@
         },
         "prefer_claim_titles": {
           "type": "boolean"
+        },
+        "layered_reading": {
+          "type": "boolean"
+        },
+        "report_profile": {
+          "type": "string",
+          "enum": [
+            "quick",
+            "standard",
+            "complete"
+          ]
+        },
+        "show_research_value": {
+          "type": "boolean"
+        },
+        "show_who_should_read": {
+          "type": "boolean"
+        },
+        "assumption_detail": {
+          "type": "string",
+          "enum": [
+            "summary",
+            "full"
+          ]
+        },
+        "claim_detail": {
+          "type": "string",
+          "enum": [
+            "compact",
+            "full"
+          ]
+        },
+        "experiment_detail": {
+          "type": "string",
+          "enum": [
+            "compact",
+            "full"
+          ]
+        },
+        "material_coverage_mode": {
+          "type": "string",
+          "enum": [
+            "compact",
+            "full"
+          ]
+        },
+        "max_core_weaknesses": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "max_open_questions": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "max_research_directions": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "show_reading_guide_table": {
+          "type": "boolean"
+        },
+        "main_report_target_pages": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "min",
+            "max"
+          ],
+          "properties": {
+            "min": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "max": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
         }
       }
     }

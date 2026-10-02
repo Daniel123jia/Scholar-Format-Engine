@@ -1,9 +1,9 @@
 name: Scholar-Format-Engine
-version: 1.3.0
+version: 1.4.0
 description: >
   Shared formatting and export engine for academic/research products. Converts
   structured research outputs into consistent editable DOCX and clean Markdown
-  using reusable Style Packs, deterministic rendering, traceability-aware layouts,
+  using reusable Style Packs, deterministic rendering, layered semantic layouts,
   and structural/visual QA.
 
 skill_file: ../SKILL.md
@@ -17,7 +17,7 @@ first_class_outputs:
   - markdown
 
 adapters:
-  - deep-reading-v1.5
+  - deep-reading-v1.6
 
 principles:
   - content_and_formatting_are_separate

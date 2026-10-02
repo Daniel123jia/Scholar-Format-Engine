@@ -1,37 +1,23 @@
 # Changelog
 
-## 1.3.0 — Critical Insight & Guided Follow-up Rendering
+## 1.4.0
 
-- Added rendering for PaperScope core weaknesses.
-- Added rendering for bounded research directions.
-- Added descriptive Claim card titles.
-- Added research-direction visual style and refined limitation styling.
-- Updated layout/QA guidance and fixtures for AI Deep Reading v1.5.
+### Layered report architecture
+- Added 3-minute judgment, deep-reading, and evidence-appendix layers.
+- Standard AI deep-reading pack targets a 4–6 page main report for a typical methods paper.
+- Disabled separate TOC page by default for the standard deep-reading pack.
+- Default evidence rendering changed to `index_only` to avoid interrupting the main narrative with repeated source excerpts.
 
+### Semantic styling
+- Added semantic Word roles for key takeaway, judgment, claim, assumption, risk, reading path, and secondary metadata.
+- Added restrained primary/evidence/risk color grammar.
+- Added selective bold rendering for semantic prefixes such as “结论：”, “为什么重要：”, “如何验证：”, and “边界：”.
 
-## 1.2.0 — Traceable Research Delivery
-
-- Added AI Deep Reading v1.4 compatibility.
-- Added compact front-matter policy for deep-reading reports.
-- Added research judgment card and component-level material coverage rendering.
-- Added structured Research Gap rendering.
-- Added experiment-evidence-chain rendering.
-- Added assumption why-needed / failure-mode / stress-test rendering.
-- Added structured guided-reading and 20-minute reading path.
-- Humanized evidence and claim ids (`E1`, `Claim 1`).
-- Evidence Index now shows evidence role and supported claims.
-- Converted Claim–Evidence blocks from long tables to one-cell semantic cards to reduce page splitting.
-- Added per-table `column_widths_pct` in DocumentIR v1.1.
-- Added best-effort block bookmarks.
-- Reduced aggressive red/brown body text in critical-review sections.
-- Default AI-deep-reading style now uses compact cover/TOC behavior.
-
-## 1.1.0
-
-- Renamed from `scholar-document-delivery` to `Scholar-Format-Engine`.
-- Added real Word named styles and bilingual typography.
-- Added v1.3 deep-reading adapter, evidence de-duplication, evidence index, and DOCX structural QA.
-
-## 1.0.0-alpha
-
-- Initial structured JSON → DOCX/Markdown rendering pipeline.
+### Deep Reading v1.6 adapter
+- First page now prioritizes the research judgment card and “why read” decision.
+- Research-value tables are hidden by default.
+- Assumptions render as a compact summary table in standard profile.
+- Experiment and Claim cards use compact mode by default.
+- Core weaknesses appear before generic risk lists.
+- Open questions and bounded research directions are capped to the highest-value items.
+- 20-minute source route displays per-step time budget.

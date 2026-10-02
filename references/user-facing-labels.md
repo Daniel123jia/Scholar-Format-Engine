@@ -34,8 +34,13 @@ Do not expose implementation enums by default.
 Do not display JSON `null`. Render its meaning in natural language.
 
 
-## v1.3 additions
+## v1.4 additions
 - `core_weaknesses` → “PaperScope 判断的核心缺陷”
 - `research_directions` → “后续研究方向（PaperScope 分析）”
 - `claim_title` → render after “Claim N｜”
 - Research directions are always framed as analysis-derived unless provenance says otherwise.
+
+
+## v1.4 clarity rule
+
+Prefer descriptive semantic labels over backend IDs. The standard report should answer “what matters?” before “how is it audited?”. Evidence IDs are compact navigation aids, not primary content.
